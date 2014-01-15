@@ -99,7 +99,7 @@
   var _webSQL;
 
   _webSQL = (function() {
-    var _queryToSQL;
+    var _insert, _queryToSQL, _typeOf;
 
     _webSQL.prototype.db = null;
 
@@ -140,8 +140,24 @@
       return this.execute(sql, callback);
     };
 
-    _webSQL.prototype.insert = function(options) {
-      return "";
+    _webSQL.prototype.insert = function(table, data, callback) {
+      var len, row, _i, _len, _results;
+      if (_typeOf(data) === "object") {
+        return _insert(table, data, callback);
+      } else {
+        len = data.length;
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          row = data[_i];
+          _results.push(_insert(table, row, function() {
+            len--;
+            if (len === 0) {
+              return callback.call(callback);
+            }
+          }));
+        }
+        return _results;
+      }
     };
 
     _webSQL.prototype.update = function(options) {
@@ -166,6 +182,20 @@
       }
     };
 
+    _insert = function(table, row, callback) {
+      var data, key, sql;
+      sql = "INSERT INTO " + table + " (";
+      data = "(";
+      for (key in row) {
+        sql += "" + key + ", ";
+        data += isNaN(row[key]) ? "'" + row[key] + "', " : "" + row[key] + ", ";
+      }
+      sql = sql.substring(0, sql.length - 2) + ") ";
+      data = data.substring(0, data.length - 2) + ") ";
+      sql += " VALUES " + data;
+      return this.execute(sql, callback);
+    };
+
     _queryToSQL = function(query) {
       var elem, or_stmt, sql, value, _i, _len;
       if (query.length > 0) {
@@ -182,6 +212,10 @@
       } else {
         return "";
       }
+    };
+
+    _typeOf = function(obj) {
+      return Object.prototype.toString.call(obj).match(/( [a-zA-Z]+)/)[0].toLowerCase().replace(" ", "");
     };
 
     return _webSQL;

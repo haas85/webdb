@@ -22,7 +22,17 @@ class _webSQL
     sql += _queryToSQL query
     @execute sql, callback
 
-  insert: (options) -> ""
+  insert: (table, data, callback) ->
+    if _typeOf(data) is "object"
+      _insert table, data, callback
+    else
+      len = data.length
+      for row in data
+        _insert table, row, () ->
+          len--
+          callback.call callback if len is 0
+
+
   update: (options) -> ""
   remove: (options) -> ""
   drop: (options) -> ""
@@ -31,6 +41,17 @@ class _webSQL
       throw "Database not initializated"
     else
       @db.transaction (tx) -> tx.executeSql(sql, callback)
+
+  _insert = (table, row, callback) ->
+    sql = "INSERT INTO #{table} ("
+    data = "("
+    for key of row
+      sql += "#{key}, "
+      data += if isNaN(row[key]) then "'#{row[key]}', " else "#{row[key]}, "
+    sql = sql.substring(0, sql.length - 2) + ") "
+    data = data.substring(0, data.length - 2) + ") "
+    sql += " VALUES #{data}"
+    @execute sql, callback
 
   _queryToSQL = (query) ->
     if query.length > 0
@@ -43,5 +64,8 @@ class _webSQL
       sql.substring(0, sql.length - 6)
     else
       ""
+
+  _typeOf = (obj) ->
+    Object::.toString.call(obj).match(/( [a-zA-Z]+)/)[0].toLowerCase().replace(" ", "")
 
 WebDB.webSQL = _webSQL
