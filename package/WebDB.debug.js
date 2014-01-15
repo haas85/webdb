@@ -1,86 +1,105 @@
 (function() {
-  var WebDB;
+  var WebDB, _webDB;
 
-  WebDB = window.WebDB = {};
+  _webDB = (function() {
+    _webDB.db = null;
 
-  WebDB.init = function(name, version, size, schema, callback) {
-    var _indexeddb, _websql;
-    if (size == null) {
-      size = 5242880;
+    function _webDB(name, version, size, schema, callback) {
+      this.name = name;
+      this.version = version;
+      this.size = size != null ? size : 5242880;
+      this.schema = schema;
+      if (window.openDatabase) {
+        this.db = new WebDB.webSQL(this.name, this.version, this.size, this.schema, callback);
+      } else if (window.indexedDB) {
+        this.db = new WebDB.indexedDB(this.name, this.version, this.size, this.schema, callback);
+      }
+      if (!window.openDatabase && !window.indexedDB) {
+        throw "HTML5 Databases not supported";
+      }
     }
-    _websql = WebDB.webSQL;
-    _indexeddb = WebDB.indexedDB;
-    if (window.openDatabase) {
-      WebDB = _websql;
-    } else if (window.indexedDB) {
-      WebDB = _indexeddb;
-    }
-    if (!window.openDatabase && !window.indexedDB) {
-      throw "HTML5 Databases not supported";
-    }
-    WebDB.webSQL = _websql;
-    WebDB.indexedDB = _indexeddb;
-    return WebDB.init(name, version, size, schema, callback);
-  };
+
+    _webDB.prototype.select = _webDB.db.select;
+
+    _webDB.prototype.insert = _webDB.db.insert;
+
+    _webDB.prototype.update = _webDB.db.update;
+
+    _webDB.prototype.remove = _webDB.db.remove;
+
+    _webDB.prototype.drop = _webDB.db.drop;
+
+    _webDB.prototype.execute = _webDB.db.execute;
+
+    return _webDB;
+
+  })();
+
+  WebDB = window.WebDB = _webDB;
 
 }).call(this);
 
 (function() {
-  WebDB.indexedDB = (function() {
-    var drop, execute, init, insert, remove, select, update, _db;
-    _db = null;
-    init = function(name, version, size, schema, callback) {
+  var _indexedDB;
+
+  _indexedDB = (function() {
+    _indexedDB.db = null;
+
+    function _indexedDB(name, version, size, schema, callback) {
       if (size == null) {
         size = 5242880;
       }
+      "";
+    }
+
+    _indexedDB.prototype.select = function(options) {
       return "";
     };
-    select = function(options) {
+
+    _indexedDB.prototype.insert = function(options) {
       return "";
     };
-    insert = function(options) {
+
+    _indexedDB.prototype.update = function(options) {
       return "";
     };
-    update = function(options) {
+
+    _indexedDB.prototype.remove = function(options) {
       return "";
     };
-    remove = function(options) {
+
+    _indexedDB.prototype.drop = function(options) {
       return "";
     };
-    drop = function(options) {
+
+    _indexedDB.prototype.execute = function(sql, callback) {
       return "";
     };
-    execute = function(sql, callback) {
-      return "";
-    };
-    return {
-      init: init,
-      select: select,
-      insert: insert,
-      update: update,
-      remove: remove,
-      drop: drop,
-      execute: execute
-    };
+
+    return _indexedDB;
+
   })();
+
+  WebDB.indexedDB = _indexedDB;
 
 }).call(this);
 
 (function() {
-  WebDB.webSQL = (function() {
-    var drop, execute, init, insert, remove, select, update, _db;
-    _db = null;
-    init = function(name, version, size, schema, callback) {
-      var row, sql, table, _results, _tables;
+  var _webSQL;
+
+  _webSQL = (function() {
+    _webSQL.db = null;
+
+    function _webSQL(name, version, size, schema, callback) {
+      var row, sql, table, _tables;
       if (size == null) {
         size = 5242880;
       }
       if (!window.openDatabase) {
         throw "WebSQL not supported";
       }
-      _db = openDatabase(name, version, "", size);
+      this.db = openDatabase(name, version, "", size);
       _tables = 0;
-      _results = [];
       for (table in schema) {
         sql = "CREATE TABLE IF NOT EXISTS " + table + " (";
         for (row in schema[table]) {
@@ -89,48 +108,49 @@
         sql = sql.substring(0, sql.length - 1);
         sql += ")";
         _tables++;
-        _results.push(execute(sql, function() {
+        execute(sql, function() {
           tables--;
           if (tables === 0) {
             return callback.call(callback);
           }
-        }));
+        });
       }
-      return _results;
-    };
-    select = function(options) {
+    }
+
+    _webSQL.prototype.select = function(options) {
       return "";
     };
-    insert = function(options) {
+
+    _webSQL.prototype.insert = function(options) {
       return "";
     };
-    update = function(options) {
+
+    _webSQL.prototype.update = function(options) {
       return "";
     };
-    remove = function(options) {
+
+    _webSQL.prototype.remove = function(options) {
       return "";
     };
-    drop = function(options) {
+
+    _webSQL.prototype.drop = function(options) {
       return "";
     };
-    execute = function(sql, callback) {
-      if (!_db) {
+
+    _webSQL.prototype.execute = function(sql, callback) {
+      if (!this.db) {
         throw "Database not initializated";
       } else {
-        return _db.transaction(function(tx) {
+        return this.db.transaction(function(tx) {
           return tx.executeSql(sql, callback);
         });
       }
     };
-    return {
-      init: init,
-      select: select,
-      insert: insert,
-      update: update,
-      remove: remove,
-      drop: drop,
-      execute: execute
-    };
+
+    return _webSQL;
+
   })();
+
+  WebDB.webSQL = _webSQL;
 
 }).call(this);

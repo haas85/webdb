@@ -1,17 +1,21 @@
-WebDB = window.WebDB = {}
+class _webDB
+  @db = null
 
-WebDB.init = (name, version, size=5242880, schema, callback) ->
-  _websql     = WebDB.webSQL
-  _indexeddb  = WebDB.indexedDB
+  constructor: (@name, @version, @size=5242880, @schema, callback) ->
+    if window.openDatabase
+      @db = new WebDB.webSQL(@name, @version, @size, @schema, callback)
+    else if window.indexedDB
+      @db = new WebDB.indexedDB(@name, @version, @size, @schema, callback)
 
-  if window.openDatabase
-    WebDB = _websql
-  else if window.indexedDB
-    WebDB = _indexeddb
+    if not window.openDatabase and not window.indexedDB
+      throw "HTML5 Databases not supported"
 
-  if not window.openDatabase and not window.indexedDB
-    throw "HTML5 Databases not supported"
+  select   : @db.select
+  insert   : @db.insert
+  update   : @db.update
+  remove   : @db.remove
+  drop     : @db.drop
+  execute  : @db.execute
 
-  WebDB.webSQL = _websql
-  WebDB.indexedDB = _indexeddb
-  WebDB.init name, version, size, schema, callback
+
+WebDB = window.WebDB = _webDB

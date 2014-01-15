@@ -1,9 +1,9 @@
-WebDB.webSQL = do ->
-  _db = null
+class _webSQL
+  @db = null
 
-  init     = (name, version, size=5242880, schema, callback) ->
+  constructor: (name, version, size=5242880, schema, callback) ->
     throw "WebSQL not supported" if not window.openDatabase
-    _db = openDatabase name, version, "", size
+    @db = openDatabase name, version, "", size
     _tables = 0
     for table of schema
       sql = "CREATE TABLE IF NOT EXISTS #{table} ("
@@ -17,22 +17,15 @@ WebDB.webSQL = do ->
         callback.call callback if tables is 0
 
 
-  select   = (options) -> ""
-  insert   = (options) -> ""
-  update   = (options) -> ""
-  remove   = (options) -> ""
-  drop     = (options) -> ""
-  execute  = (sql, callback) ->
-    if not _db
+  select: (options) -> ""
+  insert: (options) -> ""
+  update: (options) -> ""
+  remove: (options) -> ""
+  drop: (options) -> ""
+  execute: (sql, callback) ->
+    if not @db
       throw "Database not initializated"
     else
-      _db.transaction (tx) -> tx.executeSql(sql, callback)
+      @db.transaction (tx) -> tx.executeSql(sql, callback)
 
-
-  init      : init
-  select    : select
-  insert    : insert
-  update    : update
-  remove    : remove
-  drop      : drop
-  execute   : execute
+WebDB.webSQL = _webSQL
