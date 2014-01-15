@@ -1,5 +1,5 @@
 class _indexedDB
-  @db = null
+  db: null
 
   constructor: (name, version, size=5242880, schema, callback) -> ""
 

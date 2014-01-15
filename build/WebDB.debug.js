@@ -2,7 +2,7 @@
   var WebDB, _webDB;
 
   _webDB = (function() {
-    _webDB.db = null;
+    _webDB.prototype.db = null;
 
     function _webDB(name, version, size, schema, callback) {
       this.name = name;
@@ -43,7 +43,7 @@
   var _indexedDB;
 
   _indexedDB = (function() {
-    _indexedDB.db = null;
+    _indexedDB.prototype.db = null;
 
     function _indexedDB(name, version, size, schema, callback) {
       if (size == null) {
@@ -88,7 +88,7 @@
   var _webSQL;
 
   _webSQL = (function() {
-    _webSQL.db = null;
+    _webSQL.prototype.db = null;
 
     function _webSQL(name, version, size, schema, callback) {
       var row, sql, table, _tables;

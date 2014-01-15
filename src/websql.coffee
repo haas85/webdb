@@ -1,5 +1,5 @@
 class _webSQL
-  @db = null
+  db: null
 
   constructor: (name, version, size=5242880, schema, callback) ->
     throw "WebSQL not supported" if not window.openDatabase
