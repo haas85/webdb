@@ -1,0 +1,1 @@
+WebDB = window.WebDB = {}
