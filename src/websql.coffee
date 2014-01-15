@@ -2,6 +2,7 @@ WebDB.webSQL = do ->
   _db = null
 
   init     = (name, version, size=5242880, schema, callback) ->
+    throw "WebSQL not supported" if not window.openDatabase
     _db = openDatabase name, version, "", size
     _tables = 0
     for table of schema
