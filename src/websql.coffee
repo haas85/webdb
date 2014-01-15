@@ -66,6 +66,6 @@ class _webSQL
       ""
 
   _typeOf = (obj) ->
-    Object::.toString.call(obj).match(/( [a-zA-Z]+)/)[0].toLowerCase().replace(" ", "")
+    Object::.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase()
 
 WebDB.webSQL = _webSQL

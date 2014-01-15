@@ -215,7 +215,7 @@
     };
 
     _typeOf = function(obj) {
-      return Object.prototype.toString.call(obj).match(/( [a-zA-Z]+)/)[0].toLowerCase().replace(" ", "");
+      return Object.prototype.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase();
     };
 
     return _webSQL;
