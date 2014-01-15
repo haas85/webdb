@@ -168,8 +168,8 @@
       return "";
     };
 
-    _webSQL.prototype.drop = function(options) {
-      return "";
+    _webSQL.prototype.drop = function(table, callback) {
+      return this.execute("DROP TABLE IF EXISTS " + table, callback);
     };
 
     _webSQL.prototype.execute = function(sql, callback) {

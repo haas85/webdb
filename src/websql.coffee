@@ -35,7 +35,9 @@ class _webSQL
 
   update: (options) -> ""
   remove: (options) -> ""
-  drop: (options) -> ""
+
+  drop: (table, callback) -> @execute "DROP TABLE IF EXISTS #{table}", callback
+
   execute: (sql, callback) ->
     if not @db
       throw "Database not initializated"
