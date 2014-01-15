@@ -17,7 +17,11 @@ class _webSQL
         callback.call callback if tables is 0
 
 
-  select: (options) -> ""
+  select: (table, query=[], callback) ->
+    sql = "SELECT * FROM #{table}"
+    sql += _queryToSQL query
+    @execute sql, callback
+
   insert: (options) -> ""
   update: (options) -> ""
   remove: (options) -> ""
@@ -27,5 +31,17 @@ class _webSQL
       throw "Database not initializated"
     else
       @db.transaction (tx) -> tx.executeSql(sql, callback)
+
+  _queryToSQL = (query) ->
+    if query.length > 0
+      sql = " WHERE ("
+      for elem in query
+        for or_stmt of elem
+          value = elem[or_stmt]
+          sql += "#{or_stmt} = #{if isNaN(value) then "'" + value + "'" else value} OR "
+        sql = sql.substring(0, sql.length - 4) + ") AND ("
+      sql.substring(0, sql.length - 6)
+    else
+      ""
 
 WebDB.webSQL = _webSQL

@@ -2,34 +2,45 @@
   var WebDB, _webDB;
 
   _webDB = (function() {
-    _webDB.prototype.db = null;
-
     function _webDB(name, version, size, schema, callback) {
+      var db, drop, execute, insert, remove, select, update;
       this.name = name;
       this.version = version;
       this.size = size != null ? size : 5242880;
       this.schema = schema;
       if (window.openDatabase) {
-        this.db = new WebDB.webSQL(this.name, this.version, this.size, this.schema, callback);
+        db = new WebDB.webSQL(this.name, this.version, this.size, this.schema, callback);
       } else if (window.indexedDB) {
-        this.db = new WebDB.indexedDB(this.name, this.version, this.size, this.schema, callback);
+        db = new WebDB.indexedDB(this.name, this.version, this.size, this.schema, callback);
       }
       if (!window.openDatabase && !window.indexedDB) {
+        select = function() {
+          throw "HTML5 Databases not supported";
+        };
+        insert = function() {
+          throw "HTML5 Databases not supported";
+        };
+        update = function() {
+          throw "HTML5 Databases not supported";
+        };
+        remove = function() {
+          throw "HTML5 Databases not supported";
+        };
+        drop = function() {
+          throw "HTML5 Databases not supported";
+        };
+        execute = function() {
+          throw "HTML5 Databases not supported";
+        };
         throw "HTML5 Databases not supported";
       }
+      this.select = db.select;
+      this.insert = db.insert;
+      this.update = db.update;
+      this.remove = db.remove;
+      this.drop = db.drop;
+      this.execute = db.execute;
     }
-
-    _webDB.prototype.select = _webDB.db.select;
-
-    _webDB.prototype.insert = _webDB.db.insert;
-
-    _webDB.prototype.update = _webDB.db.update;
-
-    _webDB.prototype.remove = _webDB.db.remove;
-
-    _webDB.prototype.drop = _webDB.db.drop;
-
-    _webDB.prototype.execute = _webDB.db.execute;
 
     return _webDB;
 
@@ -88,6 +99,8 @@
   var _webSQL;
 
   _webSQL = (function() {
+    var _queryToSQL;
+
     _webSQL.prototype.db = null;
 
     function _webSQL(name, version, size, schema, callback) {
@@ -117,8 +130,14 @@
       }
     }
 
-    _webSQL.prototype.select = function(options) {
-      return "";
+    _webSQL.prototype.select = function(table, query, callback) {
+      var sql;
+      if (query == null) {
+        query = [];
+      }
+      sql = "SELECT * FROM " + table;
+      sql += _queryToSQL(query);
+      return this.execute(sql, callback);
     };
 
     _webSQL.prototype.insert = function(options) {
@@ -144,6 +163,24 @@
         return this.db.transaction(function(tx) {
           return tx.executeSql(sql, callback);
         });
+      }
+    };
+
+    _queryToSQL = function(query) {
+      var elem, or_stmt, sql, value, _i, _len;
+      if (query.length > 0) {
+        sql = " WHERE (";
+        for (_i = 0, _len = query.length; _i < _len; _i++) {
+          elem = query[_i];
+          for (or_stmt in elem) {
+            value = elem[or_stmt];
+            sql += "" + or_stmt + " = " + (isNaN(value) ? "'" + value + "'" : value) + " OR ";
+          }
+          sql = sql.substring(0, sql.length - 4) + ") AND (";
+        }
+        return sql.substring(0, sql.length - 6);
+      } else {
+        return "";
       }
     };
 
