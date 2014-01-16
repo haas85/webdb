@@ -9,7 +9,7 @@ class _indexedDB
       for table in schema
         @db.createObjectStore table if not @db.objectStoreNames.contains table
 
-      callback.call callback
+      callback.call callback if callback?
 
     openRequest.onerror = (e) ->
       throw "Error opening database"
@@ -26,7 +26,7 @@ class _indexedDB
       for row in data
         _write table, data, () ->
           len--
-          callback.call callback if len is 0
+          callback.call callback if len is 0  and callback?
 
   update: (table, data, query=[], callback) ->
     _queryOp db, table, data, query, callback
@@ -36,9 +36,9 @@ class _indexedDB
   drop: (table, callback) ->
     try
       @db.transaction([table],"readwrite").objectStore(table).delete()
-      callback.call callback, null, true
+      callback.call callback, null, true if callback?
     catch exception
-     callback.call callback, exception, null
+     callback.call callback, exception, null if callback?
 
   execute: (options) -> ""
 
@@ -46,10 +46,10 @@ class _indexedDB
     store = @db.transaction([table],"readwrite").objectStore(table)
     request = store.add data, 1
     request.onerror = (e) ->
-      callback.call callback, e, null
+      callback.call callback, e, null if callback?
 
     request.onsuccess = (result) ->
-      callback.call callback, null, result
+      callback.call callback, null, result if callback?
 
   _check = (element, query=[]) ->
     return true if query.length is 0
@@ -77,7 +77,7 @@ class _indexedDB
           result.push element
         cursor.continue()
       else
-        callback.call callback, null, result
+        callback.call callback, null, result if callback?
 
   _mix = (receiver, emitter) -> receiver[key] = emitter[key] for key of emitter
 

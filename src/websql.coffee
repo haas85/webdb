@@ -14,7 +14,7 @@ class _webSQL
       _tables++
       execute sql, ->
         tables--
-        callback.call callback if tables is 0
+        callback.call callback if tables is 0 and callback?
 
 
   select: (table, query=[], callback) ->
@@ -30,7 +30,7 @@ class _webSQL
       for row in data
         _insert table, row, () ->
           len--
-          callback.call callback if len is 0
+          callback.call callback if len is 0 and callback?
 
 
   update: (table, data, query=[], callback) ->

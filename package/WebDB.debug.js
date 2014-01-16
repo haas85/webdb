@@ -85,7 +85,9 @@
             _this.db.createObjectStore(table);
           }
         }
-        return callback.call(callback);
+        if (callback != null) {
+          return callback.call(callback);
+        }
       };
       openRequest.onerror = function(e) {
         throw "Error opening database";
@@ -110,7 +112,7 @@
           row = data[_i];
           _results.push(_write(table, data, function() {
             len--;
-            if (len === 0) {
+            if (len === 0 && (callback != null)) {
               return callback.call(callback);
             }
           }));
@@ -134,10 +136,14 @@
       var exception;
       try {
         this.db.transaction([table], "readwrite").objectStore(table)["delete"]();
-        return callback.call(callback, null, true);
+        if (callback != null) {
+          return callback.call(callback, null, true);
+        }
       } catch (_error) {
         exception = _error;
-        return callback.call(callback, exception, null);
+        if (callback != null) {
+          return callback.call(callback, exception, null);
+        }
       }
     };
 
@@ -150,10 +156,14 @@
       store = this.db.transaction([table], "readwrite").objectStore(table);
       request = store.add(data, 1);
       request.onerror = function(e) {
-        return callback.call(callback, e, null);
+        if (callback != null) {
+          return callback.call(callback, e, null);
+        }
       };
       return request.onsuccess = function(result) {
-        return callback.call(callback, null, result);
+        if (callback != null) {
+          return callback.call(callback, null, result);
+        }
       };
     };
 
@@ -202,7 +212,9 @@
           }
           return cursor["continue"]();
         } else {
-          return callback.call(callback, null, result);
+          if (callback != null) {
+            return callback.call(callback, null, result);
+          }
         }
       };
     };
@@ -256,7 +268,7 @@
         _tables++;
         execute(sql, function() {
           tables--;
-          if (tables === 0) {
+          if (tables === 0 && (callback != null)) {
             return callback.call(callback);
           }
         });
@@ -284,7 +296,7 @@
           row = data[_i];
           _results.push(_insert(table, row, function() {
             len--;
-            if (len === 0) {
+            if (len === 0 && (callback != null)) {
               return callback.call(callback);
             }
           }));
