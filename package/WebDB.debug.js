@@ -116,8 +116,15 @@
       return "";
     };
 
-    _indexedDB.prototype.drop = function(options) {
-      return "";
+    _indexedDB.prototype.drop = function(table, callback) {
+      var exception;
+      try {
+        this.db.transaction([table], "readwrite").objectStore(table)["delete"]();
+        return callback.call(callback, null, true);
+      } catch (_error) {
+        exception = _error;
+        return callback.call(callback, exception, null);
+      }
     };
 
     _indexedDB.prototype.execute = function(options) {

@@ -26,7 +26,14 @@ class _indexedDB
     _queryOp db, table, data, query, callback
 
   delete: (options) -> ""
-  drop: (options) -> ""
+
+  drop: (table, callback) ->
+    try
+      @db.transaction([table],"readwrite").objectStore(table).delete()
+      callback.call callback, null, true
+    catch exception
+     callback.call callback, exception, null
+
   execute: (options) -> ""
 
   _write = (table, data, callback) ->
