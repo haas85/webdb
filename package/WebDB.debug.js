@@ -100,8 +100,22 @@
     };
 
     _indexedDB.prototype.insert = function(table, data, callback) {
+      var len, row, _i, _len, _results;
       if (_typeOf(data) === "object") {
-        return _write(table, data, "add", callback);
+        return _write(table, data, callback);
+      } else {
+        len = data.length;
+        _results = [];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          row = data[_i];
+          _results.push(_write(table, data, function() {
+            len--;
+            if (len === 0) {
+              return callback.call(callback);
+            }
+          }));
+        }
+        return _results;
       }
     };
 

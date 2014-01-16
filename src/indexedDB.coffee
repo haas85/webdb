@@ -20,7 +20,13 @@ class _indexedDB
 
   insert: (table, data, callback) ->
     if _typeOf(data) is "object"
-      _write table, data, "add", callback
+      _write table, data, callback
+    else
+      len = data.length
+      for row in data
+        _write table, data, () ->
+          len--
+          callback.call callback if len is 0
 
   update: (table, data, query=[], callback) ->
     _queryOp db, table, data, query, callback
