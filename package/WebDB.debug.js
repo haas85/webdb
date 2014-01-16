@@ -244,9 +244,11 @@
   var _webSQL;
 
   _webSQL = (function() {
-    var _insert, _queryToSQL, _setValue, _typeOf;
+    var _insert, _queryToSQL, _setValue, _this, _typeOf;
 
     _webSQL.prototype.db = null;
+
+    _this = null;
 
     function _webSQL(name, schema, version, size, callback) {
       var row, sql, table, _tables;
@@ -266,9 +268,10 @@
         sql = sql.substring(0, sql.length - 1);
         sql += ")";
         _tables++;
-        execute(sql, function() {
-          tables--;
-          if (tables === 0 && (callback != null)) {
+        _this = this;
+        this.execute(sql, function() {
+          _tables--;
+          if (_tables === 0 && (callback != null)) {
             return callback.call(callback);
           }
         });
@@ -310,11 +313,11 @@
       if (query == null) {
         query = [];
       }
-      sql = "UPDATE TABLE " + table + " SET (";
+      sql = "UPDATE " + table + " SET ";
       for (key in data) {
         sql += "" + key + " = " + (_setValue(data[key])) + ", ";
       }
-      sql = sql.substring(0, sql.length - 2) + ") " + _queryToSQL(query);
+      sql = sql.substring(0, sql.length - 2) + _queryToSQL(query);
       return this.execute(sql, callback);
     };
 
@@ -336,7 +339,7 @@
         throw "Database not initializated";
       } else {
         return this.db.transaction(function(tx) {
-          return tx.executeSql(sql, callback);
+          return tx.executeSql(sql, [], callback);
         });
       }
     };
@@ -352,7 +355,7 @@
       sql = sql.substring(0, sql.length - 2) + ") ";
       data = data.substring(0, data.length - 2) + ") ";
       sql += " VALUES " + data;
-      return this.execute(sql, callback);
+      return _this.execute(sql, callback);
     };
 
     _queryToSQL = function(query) {

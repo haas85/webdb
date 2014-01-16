@@ -1,5 +1,6 @@
 class _webSQL
   db: null
+  _this = null
 
   constructor: (name, schema, version, size=5242880, callback) ->
     throw "WebSQL not supported" if not window.openDatabase
@@ -12,9 +13,10 @@ class _webSQL
       sql = sql.substring(0, sql.length - 1)
       sql += ")"
       _tables++
-      execute sql, ->
-        tables--
-        callback.call callback if tables is 0 and callback?
+      _this = @
+      @execute sql, ->
+        _tables--
+        callback.call callback if _tables is 0 and callback?
 
 
   select: (table, query=[], callback) ->
@@ -34,10 +36,10 @@ class _webSQL
 
 
   update: (table, data, query=[], callback) ->
-    sql = "UPDATE TABLE #{table} SET ("
+    sql = "UPDATE #{table} SET "
     for key of data
       sql += "#{key} = #{_setValue(data[key])}, "
-    sql = sql.substring(0, sql.length - 2) + ") " + _queryToSQL(query)
+    sql = sql.substring(0, sql.length - 2) + _queryToSQL(query)
     @execute sql, callback
 
   delete: (table, query=[], callback) ->
@@ -50,7 +52,7 @@ class _webSQL
     if not @db
       throw "Database not initializated"
     else
-      @db.transaction (tx) -> tx.executeSql(sql, callback)
+      @db.transaction (tx) -> tx.executeSql(sql, [], callback)
 
   _insert = (table, row, callback) ->
     sql = "INSERT INTO #{table} ("
@@ -61,7 +63,7 @@ class _webSQL
     sql = sql.substring(0, sql.length - 2) + ") "
     data = data.substring(0, data.length - 2) + ") "
     sql += " VALUES #{data}"
-    @execute sql, callback
+    _this.execute sql, callback
 
   _queryToSQL = (query) ->
     if query.length > 0
