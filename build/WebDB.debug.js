@@ -167,13 +167,10 @@
       }
       result = [];
       return db.transaction([table], "readonly").objectStore(table).openCursor().onsuccess = function(e) {
-        var cursor, element, key;
+        var cursor, element;
         cursor = e.target.result;
         if (cursor) {
-          element = {};
-          for (key in cursor.value) {
-            element[key] = cursor.value[key];
-          }
+          element = cursor.value;
           if (_check(element, query)) {
             if (data != null) {
               _mix(element, data);

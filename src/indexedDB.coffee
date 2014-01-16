@@ -55,8 +55,7 @@ class _indexedDB
     db.transaction([table],"readonly").objectStore(table).openCursor().onsuccess = (e) ->
       cursor = e.target.result
       if cursor
-        element = {}
-        element[key] = cursor.value[key] for key of cursor.value
+        element = cursor.value
         if _check element, query
           if data?
             _mix element, data
