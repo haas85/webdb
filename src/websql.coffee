@@ -33,7 +33,13 @@ class _webSQL
           callback.call callback if len is 0
 
 
-  update: (options) -> ""
+  update: (table, data, query=[], callback) ->
+    sql = "UPDATE TABLE #{table} SET ("
+    for key of data
+      sql += "#{key} = #{_setValue(data[key])}, "
+    sql = sql.substring(0, sql.length - 2) + ") " + _queryToSQL(query)
+    @execute sql, callback
+
   remove: (options) -> ""
 
   drop: (table, callback) -> @execute "DROP TABLE IF EXISTS #{table}", callback
@@ -49,7 +55,7 @@ class _webSQL
     data = "("
     for key of row
       sql += "#{key}, "
-      data += if isNaN(row[key]) then "'#{row[key]}', " else "#{row[key]}, "
+      data += "#{_setValue(row[key])}, "
     sql = sql.substring(0, sql.length - 2) + ") "
     data = data.substring(0, data.length - 2) + ") "
     sql += " VALUES #{data}"
@@ -61,11 +67,13 @@ class _webSQL
       for elem in query
         for or_stmt of elem
           value = elem[or_stmt]
-          sql += "#{or_stmt} = #{if isNaN(value) then "'" + value + "'" else value} OR "
+          sql += "#{or_stmt} = #{_setValue(value)} OR "
         sql = sql.substring(0, sql.length - 4) + ") AND ("
       sql.substring(0, sql.length - 6)
     else
       ""
+
+  _setValue = (value) -> if isNaN(value) then "'#{value}'" else value
 
   _typeOf = (obj) ->
     Object::.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase()

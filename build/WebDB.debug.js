@@ -99,7 +99,7 @@
   var _webSQL;
 
   _webSQL = (function() {
-    var _insert, _queryToSQL, _typeOf;
+    var _insert, _queryToSQL, _setValue, _typeOf;
 
     _webSQL.prototype.db = null;
 
@@ -160,8 +160,17 @@
       }
     };
 
-    _webSQL.prototype.update = function(options) {
-      return "";
+    _webSQL.prototype.update = function(table, data, query, callback) {
+      var key, sql;
+      if (query == null) {
+        query = [];
+      }
+      sql = "UPDATE TABLE " + table + " SET (";
+      for (key in data) {
+        sql += "" + key + " = " + (_setValue(data[key])) + ", ";
+      }
+      sql = sql.substring(0, sql.length - 2) + ") " + _queryToSQL(query);
+      return this.execute(sql, callback);
     };
 
     _webSQL.prototype.remove = function(options) {
@@ -188,7 +197,7 @@
       data = "(";
       for (key in row) {
         sql += "" + key + ", ";
-        data += isNaN(row[key]) ? "'" + row[key] + "', " : "" + row[key] + ", ";
+        data += "" + (_setValue(row[key])) + ", ";
       }
       sql = sql.substring(0, sql.length - 2) + ") ";
       data = data.substring(0, data.length - 2) + ") ";
@@ -204,13 +213,21 @@
           elem = query[_i];
           for (or_stmt in elem) {
             value = elem[or_stmt];
-            sql += "" + or_stmt + " = " + (isNaN(value) ? "'" + value + "'" : value) + " OR ";
+            sql += "" + or_stmt + " = " + (_setValue(value)) + " OR ";
           }
           sql = sql.substring(0, sql.length - 4) + ") AND (";
         }
         return sql.substring(0, sql.length - 6);
       } else {
         return "";
+      }
+    };
+
+    _setValue = function(value) {
+      if (isNaN(value)) {
+        return "'" + value + "'";
+      } else {
+        return value;
       }
     };
 
