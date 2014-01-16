@@ -29,10 +29,12 @@ class _webSQL
       _insert table, data, callback
     else
       len = data.length
+      result = 0
       for row in data
-        _insert table, row, () ->
+        _insert table, row, (row) ->
           len--
-          callback.call callback if len is 0 and callback?
+          result++
+          callback.call callback, result if len is 0 and callback?
 
 
   update: (table, data, query=[], callback) ->
@@ -52,7 +54,15 @@ class _webSQL
     if not @db
       throw "Database not initializated"
     else
-      @db.transaction (tx) -> tx.executeSql(sql, [], callback)
+      @db.transaction (tx) ->
+        tx.executeSql sql, [], (transaction, resultset) ->
+          result = []
+          if resultset.rows.length > 0
+            for i in [0...resultset.rows.length]
+              result.push resultset.rows.item(i)
+            callback.call callback, result if callback?
+          else
+            callback.call callback, resultset.rowsAffected if callback?
 
   _insert = (table, row, callback) ->
     sql = "INSERT INTO #{table} ("

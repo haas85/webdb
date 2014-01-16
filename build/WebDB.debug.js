@@ -289,18 +289,20 @@
     };
 
     _webSQL.prototype.insert = function(table, data, callback) {
-      var len, row, _i, _len, _results;
+      var len, result, row, _i, _len, _results;
       if (_typeOf(data) === "object") {
         return _insert(table, data, callback);
       } else {
         len = data.length;
+        result = 0;
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           row = data[_i];
-          _results.push(_insert(table, row, function() {
+          _results.push(_insert(table, row, function(row) {
             len--;
+            result++;
             if (len === 0 && (callback != null)) {
-              return callback.call(callback);
+              return callback.call(callback, result);
             }
           }));
         }
@@ -339,7 +341,22 @@
         throw "Database not initializated";
       } else {
         return this.db.transaction(function(tx) {
-          return tx.executeSql(sql, [], callback);
+          return tx.executeSql(sql, [], function(transaction, resultset) {
+            var i, result, _i, _ref;
+            result = [];
+            if (resultset.rows.length > 0) {
+              for (i = _i = 0, _ref = resultset.rows.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                result.push(resultset.rows.item(i));
+              }
+              if (callback != null) {
+                return callback.call(callback, result);
+              }
+            } else {
+              if (callback != null) {
+                return callback.call(callback, resultset.rowsAffected);
+              }
+            }
+          });
         });
       }
     };
