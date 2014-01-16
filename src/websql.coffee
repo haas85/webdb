@@ -10,8 +10,7 @@ class _webSQL
       sql = "CREATE TABLE IF NOT EXISTS #{table} ("
       for row of schema[table]
         sql += "#{row} #{schema[table][row]},"
-      sql = sql.substring(0, sql.length - 1)
-      sql += ")"
+      sql = sql.substring(0, sql.length - 1) + ")"
       _tables++
       _this = @
       @execute sql, ->
@@ -20,8 +19,7 @@ class _webSQL
 
 
   select: (table, query=[], callback) ->
-    sql = "SELECT * FROM #{table}"
-    sql += _queryToSQL query
+    sql = "SELECT * FROM #{table}" + _queryToSQL(query)
     @execute sql, callback
 
   insert: (table, data, callback) ->
@@ -58,8 +56,7 @@ class _webSQL
         tx.executeSql sql, [], (transaction, resultset) ->
           result = []
           if resultset.rows.length > 0
-            for i in [0...resultset.rows.length]
-              result.push resultset.rows.item(i)
+            result = (resultset.rows.item(i) for i in [0...resultset.rows.length])
             callback.call callback, result if callback?
           else
             callback.call callback, resultset.rowsAffected if callback?

@@ -265,8 +265,7 @@
         for (row in schema[table]) {
           sql += "" + row + " " + schema[table][row] + ",";
         }
-        sql = sql.substring(0, sql.length - 1);
-        sql += ")";
+        sql = sql.substring(0, sql.length - 1) + ")";
         _tables++;
         _this = this;
         this.execute(sql, function() {
@@ -283,8 +282,7 @@
       if (query == null) {
         query = [];
       }
-      sql = "SELECT * FROM " + table;
-      sql += _queryToSQL(query);
+      sql = ("SELECT * FROM " + table) + _queryToSQL(query);
       return this.execute(sql, callback);
     };
 
@@ -342,12 +340,17 @@
       } else {
         return this.db.transaction(function(tx) {
           return tx.executeSql(sql, [], function(transaction, resultset) {
-            var i, result, _i, _ref;
+            var i, result;
             result = [];
             if (resultset.rows.length > 0) {
-              for (i = _i = 0, _ref = resultset.rows.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-                result.push(resultset.rows.item(i));
-              }
+              result = (function() {
+                var _i, _ref, _results;
+                _results = [];
+                for (i = _i = 0, _ref = resultset.rows.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+                  _results.push(resultset.rows.item(i));
+                }
+                return _results;
+              })();
               if (callback != null) {
                 return callback.call(callback, result);
               }
