@@ -47,15 +47,16 @@ class _indexedDB
       callback.call callback, null, result
 
   _check = (element, query=[]) ->
+    return true if query.length is 0
     for stmt in query
-      result = false
+      result = true
       for key of stmt
-        if element[key] is stmt[key]
-          result = true
+        if element[key] isnt stmt[key]
+          result = false
           break
-      if result is false
-        return false
-    return true
+      if result is true
+        return true
+    return false
 
 
 

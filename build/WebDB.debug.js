@@ -155,20 +155,23 @@
       if (query == null) {
         query = [];
       }
+      if (query.length === 0) {
+        return true;
+      }
       for (_i = 0, _len = query.length; _i < _len; _i++) {
         stmt = query[_i];
-        result = false;
+        result = true;
         for (key in stmt) {
-          if (element[key] === stmt[key]) {
-            result = true;
+          if (element[key] !== stmt[key]) {
+            result = false;
             break;
           }
         }
-        if (result === false) {
-          return false;
+        if (result === true) {
+          return true;
         }
       }
-      return true;
+      return false;
     };
 
     _typeOf = function(obj) {
