@@ -40,7 +40,9 @@ class _webSQL
     sql = sql.substring(0, sql.length - 2) + ") " + _queryToSQL(query)
     @execute sql, callback
 
-  remove: (options) -> ""
+  delete: (table, query=[], callback) ->
+    sql = "DELETE FROM #{table} #{_queryToSQL(query)}"
+    @execute sql, callback
 
   drop: (table, callback) -> @execute "DROP TABLE IF EXISTS #{table}", callback
 

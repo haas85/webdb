@@ -9,7 +9,7 @@ class _webDB
       select   = -> throw "HTML5 Databases not supported"
       insert   = -> throw "HTML5 Databases not supported"
       update   = -> throw "HTML5 Databases not supported"
-      remove   = -> throw "HTML5 Databases not supported"
+      delete   = -> throw "HTML5 Databases not supported"
       drop     = -> throw "HTML5 Databases not supported"
       execute  = -> throw "HTML5 Databases not supported"
       throw "HTML5 Databases not supported"
@@ -17,7 +17,7 @@ class _webDB
     @select   = db.select
     @insert   = db.insert
     @update   = db.update
-    @remove   = db.remove
+    @delete   = db.delete
     @drop     = db.drop
     @execute  = db.execute
 

@@ -7,7 +7,7 @@ class _indexedDB
   select: (options) -> ""
   insert: (options) -> ""
   update: (options) -> ""
-  remove: (options) -> ""
+  delete: (options) -> ""
   drop: (options) -> ""
   execute: (sql, callback) -> ""
 

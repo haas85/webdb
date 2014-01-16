@@ -75,7 +75,7 @@
       return "";
     };
 
-    _indexedDB.prototype.remove = function(options) {
+    _indexedDB.prototype["delete"] = function(options) {
       return "";
     };
 
@@ -173,8 +173,13 @@
       return this.execute(sql, callback);
     };
 
-    _webSQL.prototype.remove = function(options) {
-      return "";
+    _webSQL.prototype["delete"] = function(table, query, callback) {
+      var sql;
+      if (query == null) {
+        query = [];
+      }
+      sql = "DELETE FROM " + table + " " + (_queryToSQL(query));
+      return this.execute(sql, callback);
     };
 
     _webSQL.prototype.drop = function(table, callback) {
