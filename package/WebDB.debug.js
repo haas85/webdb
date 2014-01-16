@@ -2,34 +2,42 @@
   var WebDB, _webDB;
 
   _webDB = (function() {
-    function _webDB(name, version, size, schema, callback) {
-      var db, drop, execute, insert, remove, select, update;
+    function _webDB(name, schema, version, size, callback) {
+      var db, key;
       this.name = name;
+      this.schema = schema;
       this.version = version;
       this.size = size != null ? size : 5242880;
-      this.schema = schema;
       if (window.openDatabase) {
-        db = new WebDB.webSQL(this.name, this.version, this.size, this.schema, callback);
+        db = new WebDB.webSQL(this.name, this.schema, this.version, this.size, callback);
       } else if (window.indexedDB) {
-        db = new WebDB.indexedDB(this.name, this.version, this.size, this.schema, callback);
+        this.schema = (function() {
+          var _results;
+          _results = [];
+          for (key in this.schema) {
+            _results.push(key);
+          }
+          return _results;
+        }).call(this);
+        db = new WebDB.indexedDB(this.name, this.schema, this.version, callback);
       }
       if (!window.openDatabase && !window.indexedDB) {
-        select = function() {
+        this.select = function() {
           throw "HTML5 Databases not supported";
         };
-        insert = function() {
+        this.insert = function() {
           throw "HTML5 Databases not supported";
         };
-        update = function() {
+        this.update = function() {
           throw "HTML5 Databases not supported";
         };
-        remove = function() {
+        this["delete"] = function() {
           throw "HTML5 Databases not supported";
         };
-        drop = function() {
+        this.drop = function() {
           throw "HTML5 Databases not supported";
         };
-        execute = function() {
+        this.execute = function() {
           throw "HTML5 Databases not supported";
         };
         throw "HTML5 Databases not supported";
@@ -37,7 +45,7 @@
       this.select = db.select;
       this.insert = db.insert;
       this.update = db.update;
-      this.remove = db.remove;
+      this["delete"] = db["delete"];
       this.drop = db.drop;
       this.execute = db.execute;
     }
@@ -54,21 +62,44 @@
   var _indexedDB;
 
   _indexedDB = (function() {
+    var _typeOf;
+
     _indexedDB.prototype.db = null;
 
-    function _indexedDB(name, version, size, schema, callback) {
-      if (size == null) {
-        size = 5242880;
+    function _indexedDB(name, schema, version, callback) {
+      var openRequest,
+        _this = this;
+      if (version == null) {
+        version = 1;
       }
-      "";
+      if (!window.indexedDB) {
+        throw "IndexedDB not supported";
+      }
+      openRequest = indexedDB.open(dbName, version);
+      openRequest.onsuccess = function(e) {
+        var table, _i, _len;
+        _this.db = e.target.result;
+        for (_i = 0, _len = schema.length; _i < _len; _i++) {
+          table = schema[_i];
+          if (!_this.db.objectStoreNames.contains(table)) {
+            _this.db.createObjectStore(table);
+          }
+        }
+        return callback.call(callback);
+      };
+      openRequest.onerror = function(e) {
+        throw "Error opening database";
+      };
     }
 
     _indexedDB.prototype.select = function(options) {
       return "";
     };
 
-    _indexedDB.prototype.insert = function(options) {
-      return "";
+    _indexedDB.prototype.insert = function(table, data, callback) {
+      if (_typeOf(data) === "object") {
+        return this.execute(table, data, "add", callback);
+      }
     };
 
     _indexedDB.prototype.update = function(options) {
@@ -83,8 +114,20 @@
       return "";
     };
 
-    _indexedDB.prototype.execute = function(sql, callback) {
-      return "";
+    _indexedDB.prototype.execute = function(table, data, operation, callback) {
+      var request, store;
+      store = this.db.transaction([table], "readwrite").objectStore(table);
+      request = store[operation](data, 1);
+      request.onerror = function(e) {
+        return callback.call(callback, e, null);
+      };
+      return request.onsuccess = function(result) {
+        return callback.call(callback, null, result);
+      };
+    };
+
+    _typeOf = function(obj) {
+      return Object.prototype.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase();
     };
 
     return _indexedDB;
@@ -103,7 +146,7 @@
 
     _webSQL.prototype.db = null;
 
-    function _webSQL(name, version, size, schema, callback) {
+    function _webSQL(name, schema, version, size, callback) {
       var row, sql, table, _tables;
       if (size == null) {
         size = 5242880;
