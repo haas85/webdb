@@ -306,11 +306,11 @@
           elem = query[_i];
           for (or_stmt in elem) {
             value = elem[or_stmt];
-            sql += "" + or_stmt + " = " + (_setValue(value)) + " OR ";
+            sql += "" + or_stmt + " = " + (_setValue(value)) + " AND ";
           }
-          sql = sql.substring(0, sql.length - 4) + ") AND (";
+          sql = sql.substring(0, sql.length - 5) + ") OR (";
         }
-        return sql.substring(0, sql.length - 6);
+        return sql.substring(0, sql.length - 5);
       } else {
         return "";
       }

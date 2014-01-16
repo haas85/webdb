@@ -69,9 +69,9 @@ class _webSQL
       for elem in query
         for or_stmt of elem
           value = elem[or_stmt]
-          sql += "#{or_stmt} = #{_setValue(value)} OR "
-        sql = sql.substring(0, sql.length - 4) + ") AND ("
-      sql.substring(0, sql.length - 6)
+          sql += "#{or_stmt} = #{_setValue(value)} AND "
+        sql = sql.substring(0, sql.length - 5) + ") OR ("
+      sql.substring(0, sql.length - 5)
     else
       ""
 
