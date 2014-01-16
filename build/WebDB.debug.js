@@ -62,7 +62,7 @@
   var _indexedDB;
 
   _indexedDB = (function() {
-    var _check, _typeOf, _write;
+    var _check, _mix, _queryOp, _typeOf, _write;
 
     _indexedDB.prototype.db = null;
 
@@ -93,27 +93,10 @@
     }
 
     _indexedDB.prototype.select = function(table, query, callback) {
-      var result;
       if (query == null) {
         query = [];
       }
-      result = [];
-      return this.db.transaction([table], "readonly").objectStore(table).openCursor().onsuccess = function(e) {
-        var cursor, element, key;
-        cursor = e.target.result;
-        if (cursor) {
-          element = {};
-          for (key in cursor.value) {
-            element[key] = cursor.value[key];
-          }
-          if (_check(element, query)) {
-            result.push(element);
-          }
-          return cursor["continue"]();
-        } else {
-          return callback.call(callback, null, result);
-        }
-      };
+      return _queryOp(db, table, null, query, callback);
     };
 
     _indexedDB.prototype.insert = function(table, data, callback) {
@@ -122,8 +105,11 @@
       }
     };
 
-    _indexedDB.prototype.update = function(options) {
-      return "";
+    _indexedDB.prototype.update = function(table, data, query, callback) {
+      if (query == null) {
+        query = [];
+      }
+      return _queryOp(db, table, data, query, callback);
     };
 
     _indexedDB.prototype["delete"] = function(options) {
@@ -138,10 +124,10 @@
       return "";
     };
 
-    _write = function(table, data, operation, callback) {
+    _write = function(table, data, callback) {
       var request, store;
       store = this.db.transaction([table], "readwrite").objectStore(table);
-      request = store[operation](data, 1);
+      request = store.add(data, 1);
       request.onerror = function(e) {
         return callback.call(callback, e, null);
       };
@@ -172,6 +158,44 @@
         }
       }
       return false;
+    };
+
+    _queryOp = function(db, table, data, query, callback) {
+      var result;
+      if (query == null) {
+        query = [];
+      }
+      result = [];
+      return db.transaction([table], "readonly").objectStore(table).openCursor().onsuccess = function(e) {
+        var cursor, element, key;
+        cursor = e.target.result;
+        if (cursor) {
+          element = {};
+          for (key in cursor.value) {
+            element[key] = cursor.value[key];
+          }
+          if (_check(element, query)) {
+            if (data != null) {
+              _mix(element, data);
+              _mix(cursor.value, data);
+              cursor.update(cursor.value);
+            }
+            result.push(element);
+          }
+          return cursor["continue"]();
+        } else {
+          return callback.call(callback, null, result);
+        }
+      };
+    };
+
+    _mix = function(receiver, emitter) {
+      var key, _results;
+      _results = [];
+      for (key in emitter) {
+        _results.push(receiver[key] = emitter[key]);
+      }
+      return _results;
     };
 
     _typeOf = function(obj) {

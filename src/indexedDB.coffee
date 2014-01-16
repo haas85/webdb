@@ -16,30 +16,22 @@ class _indexedDB
 
 
   select: (table, query=[], callback) ->
-    result = []
-    @db.transaction([table],"readonly").objectStore(table).openCursor().onsuccess = (e) ->
-      cursor = e.target.result
-      if cursor
-        element = {}
-        for key of cursor.value
-          element[key] = cursor.value[key]
-        result.push element if _check element, query
-        cursor.continue()
-      else
-        callback.call callback, null, result
+    _queryOp db, table, null, query, callback
 
   insert: (table, data, callback) ->
     if _typeOf(data) is "object"
       _write table, data, "add", callback
 
-  update: (options) -> ""
+  update: (table, data, query=[], callback) ->
+    _queryOp db, table, data, query, callback
+
   delete: (options) -> ""
   drop: (options) -> ""
   execute: (options) -> ""
 
-  _write = (table, data, operation, callback) ->
+  _write = (table, data, callback) ->
     store = @db.transaction([table],"readwrite").objectStore(table)
-    request = store[operation] data, 1
+    request = store.add data, 1
     request.onerror = (e) ->
       callback.call callback, e, null
 
@@ -58,7 +50,24 @@ class _indexedDB
         return true
     return false
 
+  _queryOp = (db, table, data, query=[], callback) ->
+    result = []
+    db.transaction([table],"readonly").objectStore(table).openCursor().onsuccess = (e) ->
+      cursor = e.target.result
+      if cursor
+        element = {}
+        element[key] = cursor.value[key] for key of cursor.value
+        if _check element, query
+          if data?
+            _mix element, data
+            _mix cursor.value, data
+            cursor.update cursor.value
+          result.push element
+        cursor.continue()
+      else
+        callback.call callback, null, result
 
+  _mix = (receiver, emitter) -> receiver[key] = emitter[key] for key of emitter
 
   _typeOf = (obj) ->
     Object::.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase()
