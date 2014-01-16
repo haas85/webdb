@@ -62,7 +62,7 @@
   var _indexedDB;
 
   _indexedDB = (function() {
-    var _typeOf;
+    var _check, _typeOf, _write;
 
     _indexedDB.prototype.db = null;
 
@@ -92,13 +92,33 @@
       };
     }
 
-    _indexedDB.prototype.select = function(options) {
-      return "";
+    _indexedDB.prototype.select = function(table, query, callback) {
+      var result;
+      if (query == null) {
+        query = [];
+      }
+      result = [];
+      return this.db.transaction([table], "readonly").objectStore(table).openCursor().onsuccess = function(e) {
+        var cursor, element, key;
+        cursor = e.target.result;
+        if (cursor) {
+          element = {};
+          for (key in cursor.value) {
+            element[key] = cursor.value[key];
+          }
+          if (_check(element, query)) {
+            result.push(element);
+          }
+          return cursor["continue"]();
+        } else {
+          return callback.call(callback, null, result);
+        }
+      };
     };
 
     _indexedDB.prototype.insert = function(table, data, callback) {
       if (_typeOf(data) === "object") {
-        return this.execute(table, data, "add", callback);
+        return _write(table, data, "add", callback);
       }
     };
 
@@ -114,7 +134,11 @@
       return "";
     };
 
-    _indexedDB.prototype.execute = function(table, data, operation, callback) {
+    _indexedDB.prototype.execute = function(options) {
+      return "";
+    };
+
+    _write = function(table, data, operation, callback) {
       var request, store;
       store = this.db.transaction([table], "readwrite").objectStore(table);
       request = store[operation](data, 1);
@@ -124,6 +148,27 @@
       return request.onsuccess = function(result) {
         return callback.call(callback, null, result);
       };
+    };
+
+    _check = function(element, query) {
+      var key, result, stmt, _i, _len;
+      if (query == null) {
+        query = [];
+      }
+      for (_i = 0, _len = query.length; _i < _len; _i++) {
+        stmt = query[_i];
+        result = false;
+        for (key in stmt) {
+          if (element[key] === stmt[key]) {
+            result = true;
+            break;
+          }
+        }
+        if (result === false) {
+          return false;
+        }
+      }
+      return true;
     };
 
     _typeOf = function(obj) {

@@ -15,15 +15,29 @@ class _indexedDB
       throw "Error opening database"
 
 
-  select: (options) -> ""
+  select: (table, query=[], callback) ->
+    result = []
+    @db.transaction([table],"readonly").objectStore(table).openCursor().onsuccess = (e) ->
+      cursor = e.target.result
+      if cursor
+        element = {}
+        for key of cursor.value
+          element[key] = cursor.value[key]
+        result.push element if _check element, query
+        cursor.continue()
+      else
+        callback.call callback, null, result
+
   insert: (table, data, callback) ->
     if _typeOf(data) is "object"
-      @execute table, data, "add", callback
+      _write table, data, "add", callback
 
   update: (options) -> ""
   delete: (options) -> ""
   drop: (options) -> ""
-  execute: (table, data, operation, callback) ->
+  execute: (options) -> ""
+
+  _write = (table, data, operation, callback) ->
     store = @db.transaction([table],"readwrite").objectStore(table)
     request = store[operation] data, 1
     request.onerror = (e) ->
@@ -31,6 +45,19 @@ class _indexedDB
 
     request.onsuccess = (result) ->
       callback.call callback, null, result
+
+  _check = (element, query=[]) ->
+    for stmt in query
+      result = false
+      for key of stmt
+        if element[key] is stmt[key]
+          result = true
+          break
+      if result is false
+        return false
+    return true
+
+
 
   _typeOf = (obj) ->
     Object::.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase()
