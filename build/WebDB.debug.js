@@ -112,7 +112,7 @@
       if (query == null) {
         query = [];
       }
-      return _queryOp(db, table, null, query, callback);
+      return _queryOp(this.db, table, null, query, callback);
     };
 
     _indexedDB.prototype.insert = function(table, data, callback) {
@@ -139,7 +139,7 @@
       if (query == null) {
         query = [];
       }
-      return _queryOp(db, table, data, query, callback);
+      return _queryOp(this.db, table, data, query, callback);
     };
 
     _indexedDB.prototype["delete"] = function(options) {

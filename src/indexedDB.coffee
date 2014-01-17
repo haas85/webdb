@@ -19,7 +19,7 @@ class _indexedDB
     openRequest.onversionchange = (e) -> console.log e
 
   select: (table, query=[], callback) ->
-    _queryOp db, table, null, query, callback
+    _queryOp @db, table, null, query, callback
 
   insert: (table, data, callback) ->
     if _typeOf(data) is "object"
@@ -32,7 +32,7 @@ class _indexedDB
           callback.call callback if len is 0  and callback?
 
   update: (table, data, query=[], callback) ->
-    _queryOp db, table, data, query, callback
+    _queryOp @db, table, data, query, callback
 
   delete: (options) -> ""
 
