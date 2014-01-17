@@ -38,11 +38,16 @@ class _indexedDB
 
   drop: (table, callback) ->
     try
-      @db.transaction([table],"readwrite").objectStore(table).delete()
-      db.deleteObjectStore(table)
-      callback.call callback, null, true if callback?
+      store = @db.transaction([table],"readwrite").objectStore(table)
+      store.openCursor().onsuccess = (e) ->
+        cursor = e.target.result
+        if cursor
+          store.delete cursor.primaryKey
+          do cursor.continue
+      # to drop completely, a version change must be executed
+      callback.call callbackif callback?
     catch exception
-     callback.call callback, exception, null if callback?
+     callback.call callback if callback?
 
   execute: (options) -> ""
 
@@ -80,7 +85,7 @@ class _indexedDB
             _mix cursor.value, data
             cursor.update cursor.value
           result.push element
-        cursor.continue()
+        do cursor.continue
       else
         callback.call callback, null, result if callback?
 

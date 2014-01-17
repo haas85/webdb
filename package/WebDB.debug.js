@@ -151,17 +151,22 @@
     };
 
     _indexedDB.prototype.drop = function(table, callback) {
-      var exception;
+      var exception, store;
       try {
-        this.db.transaction([table], "readwrite").objectStore(table)["delete"]();
-        db.deleteObjectStore(table);
-        if (callback != null) {
-          return callback.call(callback, null, true);
-        }
+        store = this.db.transaction([table], "readwrite").objectStore(table);
+        store.openCursor().onsuccess = function(e) {
+          var cursor;
+          cursor = e.target.result;
+          if (cursor) {
+            store["delete"](cursor.primaryKey);
+            return cursor["continue"]();
+          }
+        };
+        return callback.call(callbackif(callback != null));
       } catch (_error) {
         exception = _error;
         if (callback != null) {
-          return callback.call(callback, exception, null);
+          return callback.call(callback);
         }
       }
     };
