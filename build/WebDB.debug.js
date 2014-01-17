@@ -342,7 +342,7 @@
           return tx.executeSql(sql, [], function(transaction, resultset) {
             var i, result;
             result = [];
-            if (resultset.rows.length > 0) {
+            if (sql.indexOf("SELECT") !== -1) {
               result = (function() {
                 var _i, _ref, _results;
                 _results = [];

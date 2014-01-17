@@ -55,7 +55,7 @@ class _webSQL
       @db.transaction (tx) ->
         tx.executeSql sql, [], (transaction, resultset) ->
           result = []
-          if resultset.rows.length > 0
+          if sql.indexOf("SELECT") isnt -1
             result = (resultset.rows.item(i) for i in [0...resultset.rows.length])
             callback.call callback, result if callback?
           else
