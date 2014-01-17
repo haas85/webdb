@@ -307,11 +307,12 @@
     function _webSQL(name, schema, version, size, callback) {
       var row, sql, table, _tables;
       if (size == null) {
-        size = 5242880;
+        size = 5;
       }
       if (!window.openDatabase) {
         throw "WebSQL not supported";
       }
+      size = size * 1024 * 1024;
       this.db = openDatabase(name, version, "", size);
       _tables = 0;
       for (table in schema) {
