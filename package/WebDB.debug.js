@@ -77,23 +77,31 @@
       }
       openRequest = indexedDB.open(name, version);
       openRequest.onsuccess = function(e) {
-        return _this.db = e.target.result;
+        _this.db = e.target.result;
+        if (callback != null) {
+          return callback.call(callback);
+        }
       };
       openRequest.onerror = function(e) {
         throw "Error opening database";
       };
       openRequest.onupgradeneeded = function(e) {
-        var table, _i, _len;
+        var options, table, _i, _len, _results;
         _this.db = e.target.result;
+        options = {
+          keyPath: "key",
+          autoIncrement: true
+        };
+        _results = [];
         for (_i = 0, _len = schema.length; _i < _len; _i++) {
           table = schema[_i];
           if (!_this.db.objectStoreNames.contains(table)) {
-            _this.db.createObjectStore(table);
+            _results.push(_this.db.createObjectStore(table, options));
+          } else {
+            _results.push(void 0);
           }
         }
-        if (callback != null) {
-          return callback.call(callback);
-        }
+        return _results;
       };
       openRequest.onversionchange = function(e) {
         return console.log(e);
@@ -110,13 +118,13 @@
     _indexedDB.prototype.insert = function(table, data, callback) {
       var len, row, _i, _len, _results;
       if (_typeOf(data) === "object") {
-        return _write(table, data, callback);
+        return _write(this, table, data, callback);
       } else {
         len = data.length;
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           row = data[_i];
-          _results.push(_write(table, data, function() {
+          _results.push(_write(this, table, row, function() {
             len--;
             if (len === 0 && (callback != null)) {
               return callback.call(callback);
@@ -142,6 +150,7 @@
       var exception;
       try {
         this.db.transaction([table], "readwrite").objectStore(table)["delete"]();
+        db.deleteObjectStore(table);
         if (callback != null) {
           return callback.call(callback, null, true);
         }
@@ -157,10 +166,10 @@
       return "";
     };
 
-    _write = function(table, data, callback) {
+    _write = function(_this, table, data, callback) {
       var request, store;
-      store = this.db.transaction([table], "readwrite").objectStore(table);
-      request = store.add(data, 1);
+      store = _this.db.transaction([table], "readwrite").objectStore(table);
+      request = store.add(data);
       request.onerror = function(e) {
         if (callback != null) {
           return callback.call(callback, e, null);
