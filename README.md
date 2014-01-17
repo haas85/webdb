@@ -83,6 +83,7 @@ You can get the stored data using the **select** method.
 * **name:** The name of the database
 * **query:** The search query, its format is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR.
 * **callback:** The callback that will receive the result of the query.
+
 		var query = [
 			{
 				name: "haas85",
@@ -231,6 +232,7 @@ You can get the stored data using the **select** method.
 * **name:** The name of the database
 * **query:** The search query, its format is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR.
 * **callback:** The callback that will receive the result of the query.
+
 		var query = [
 			{
 				name: "haas85",
@@ -377,6 +379,7 @@ You can get the stored data using the **select** method.
 * **name:** The name of the database
 * **query:** The search query, its format is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR.
 * **callback:** The callback that will receive the result of the query.
+
 		var query = [
 			{
 				name: "haas85",
