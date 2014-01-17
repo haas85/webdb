@@ -36,13 +36,13 @@ To create a database and its table schemas you just have to create a new instanc
 				content: "TEXT"
 			}
 		};
-	
+
 		var onCreated = function(){
 			alert("Database Created");
 		};
-	
+
 		var myDB = new WebDB("MyDB", schema, 1, 5, onCreated);
-	
+
 ####Inserting Data####
 The instance that previously has been created has several methods the first one is **insert**. Data can be inserted one by one or in an array.
 #####Parameters#####
@@ -55,7 +55,7 @@ The instance that previously has been created has several methods the first one 
 			email: "inigo@ingonza.com",
 			age: 29
 		};
-	
+
 		var multiple_data = [
 			{
 				name: "user2",
@@ -69,16 +69,16 @@ The instance that previously has been created has several methods the first one 
 			},
 
 		];
-	
+
 		var onInserted = function(inserts){
 			alert("The amount of rows inserted is: " + inserts);
 		};
-	
+
 		myDB.insert("users", single_data, onInserted);
 		myDB.insert("users", multiple_data, onInserted);
-	
+
 ####Getting the data####
-You can get the stored data using the **select** method. 
+You can get the stored data using the **select** method.
 #####Parameters#####
 * **name:** The name of the database
 * **query:** The search query, its format is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR.
@@ -94,16 +94,16 @@ You can get the stored data using the **select** method.
 			}
 		];
 		// This is like: WHERE (name = 'haas85' AND age = 29) OR (age = 24)
-	
+
 		var onUsers = function(users){
 			console.log("This is an array of objects from the DB");
 			console.log(users);
 		};
-	
+
 		myDB.select("users", query, onUsers)
-	
+
 ####Updating entries####
-The data can be updated, to do this the method **update** must be used. 
+The data can be updated, to do this the method **update** must be used.
 #####Parameters#####
 * **name:** The name of the database
 * **data:** The fields to update
@@ -116,19 +116,19 @@ The data can be updated, to do this the method **update** must be used.
 				age: 32
 			}
 		];
-	
+
 		var data ={
 			name: "user_2"
 		};
-	
+
 		var onUpdate = function(affected){
 			console.log("The number of rows updated is: " + affected);
 		};
-		
+
 		myDB.update("users", data, query, onUpdate);
 
-####Deleting an entries####
-Using the **delete** method entries can be deleted. 
+####Deleting entries####
+Using the **delete** method entries can be deleted.
 #####Parameters#####
 * **name:** The name of the database
 * **query:** The query to search entries, the same format as in select.
@@ -140,24 +140,24 @@ Using the **delete** method entries can be deleted.
 				age: 32
 			}
 		];
-		
+
 		var onDelete = function(affected){
 			console.log("The number of rows deleted is: " + affected);
 		};
-	
+
 		myDB.delete("users", query, onDelete);
 
 ####Deleting a table####
-A table can be deleted usnig the **drop** method. 
+A table can be deleted usnig the **drop** method.
 #####Parameters#####
 * **name:** The name of the database
-* **callback:** The callback to execute after droping the table 
+* **callback:** The callback to execute after droping the table
 
 		var onDropped = function(){
 			console.log("Table deleted");
 		};
 		myDB.drop("posts", onDropped);
-	
+
 
 ###WebSql###
 ------------
@@ -186,13 +186,13 @@ To create a database and its table schemas you just have to create a new instanc
 				content: "TEXT"
 			}
 		};
-	
+
 		var onCreated = function(){
 			alert("Database Created");
 		};
-	
+
 		var myDB = new WebDB.webSQL("MyDB", schema, 1, 5, onCreated);
-	
+
 ####Inserting Data####
 The instance that previously has been created has several methods the first one is **insert**. Data can be inserted one by one or in an array.
 #####Parameters#####
@@ -205,7 +205,7 @@ The instance that previously has been created has several methods the first one 
 			email: "inigo@ingonza.com",
 			age: 29
 		};
-	
+
 		var multiple_data = [
 			{
 				name: "user2",
@@ -219,16 +219,16 @@ The instance that previously has been created has several methods the first one 
 			},
 
 		];
-	
+
 		var onInserted = function(inserts){
 			alert("The amount of rows inserted is: " + inserts);
 		};
-	
+
 		myDB.insert("users", single_data, onInserted);
 		myDB.insert("users", multiple_data, onInserted);
-	
+
 ####Getting the data####
-You can get the stored data using the **select** method. 
+You can get the stored data using the **select** method.
 #####Parameters#####
 * **name:** The name of the database
 * **query:** The search query, its format is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR.
@@ -244,16 +244,16 @@ You can get the stored data using the **select** method.
 			}
 		];
 		// This is like: WHERE (name = 'haas85' AND age = 29) OR (age = 24)
-	
+
 		var onUsers = function(users){
 			console.log("This is an array of objects from the DB");
 			console.log(users);
 		};
-	
+
 		myDB.select("users", query, onUsers)
-	
+
 ####Updating entries####
-The data can be updated, to do this the method **update** must be used. 
+The data can be updated, to do this the method **update** must be used.
 #####Parameters#####
 * **name:** The name of the database
 * **data:** The fields to update
@@ -266,19 +266,19 @@ The data can be updated, to do this the method **update** must be used.
 				age: 32
 			}
 		];
-	
+
 		var data ={
 			name: "user_2"
 		};
-	
+
 		var onUpdate = function(affected){
 			console.log("The number of rows updated is: " + affected);
 		};
-		
+
 		myDB.update("users", data, query, onUpdate);
 
-####Deleting an entries####
-Using the **delete** method entries can be deleted. 
+####Deleting entries####
+Using the **delete** method entries can be deleted.
 #####Parameters#####
 * **name:** The name of the database
 * **query:** The query to search entries, the same format as in select.
@@ -290,24 +290,24 @@ Using the **delete** method entries can be deleted.
 				age: 32
 			}
 		];
-		
+
 		var onDelete = function(affected){
 			console.log("The number of rows deleted is: " + affected);
 		};
-	
+
 		myDB.delete("users", query, onDelete);
 
 ####Deleting a table####
-A table can be deleted usnig the **drop** method. 
+A table can be deleted usnig the **drop** method.
 #####Parameters#####
 * **name:** The name of the database
-* **callback:** The callback to execute after droping the table 
+* **callback:** The callback to execute after droping the table
 
 		var onDropped = function(){
 			console.log("Table deleted");
 		};
 		myDB.drop("posts", onDropped);
-	
+
 ####Pure SQL####
 Maybe this methods aren't enough for you, so you can execute your own SQL with the **execute** method.
 #####Parameters#####
@@ -317,9 +317,9 @@ Maybe this methods aren't enough for you, so you can execute your own SQL with t
 		var onSQL = function(result){
 			console.log("If is a select result has the rows, else it has the number of rows affected");
 		};
-	
+
 		myDB.execute("SELECT * FROM users WHERE age > 22", onSQL);
-		
+
 ###IndexedDB###
 ---------------
 
@@ -334,13 +334,13 @@ To create a database and its table schemas you just have to create a new instanc
 * **callback:** The method to call after creating the database
 
 		var schema = ["users", "posts"];
-	
+
 		var onCreated = function(){
 			alert("Database Created");
 		};
-	
+
 		var myDB = new WebDB.indexedDB("MyDB", schema, 1, onCreated);
-	
+
 ####Inserting Data####
 The instance that previously has been created has several methods the first one is **insert**. Data can be inserted one by one or in an array.
 #####Parameters#####
@@ -353,7 +353,7 @@ The instance that previously has been created has several methods the first one 
 			email: "inigo@ingonza.com",
 			age: 29
 		};
-	
+
 		var multiple_data = [
 			{
 				name: "user2",
@@ -367,16 +367,16 @@ The instance that previously has been created has several methods the first one 
 			},
 
 		];
-	
+
 		var onInserted = function(inserts){
 			alert("The amount of rows inserted is: " + inserts);
 		};
-	
+
 		myDB.insert("users", single_data, onInserted);
 		myDB.insert("users", multiple_data, onInserted);
-	
+
 ####Getting the data####
-You can get the stored data using the **select** method. 
+You can get the stored data using the **select** method.
 #####Parameters#####
 * **name:** The name of the database
 * **query:** The search query, its format is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR.
@@ -392,16 +392,16 @@ You can get the stored data using the **select** method.
 			}
 		];
 		// This is like: WHERE (name = 'haas85' AND age = 29) OR (age = 24)
-	
+
 		var onUsers = function(users){
 			console.log("This is an array of objects from the DB");
 			console.log(users);
 		};
-	
+
 		myDB.select("users", query, onUsers)
-	
+
 ####Updating entries####
-The data can be updated, to do this the method **update** must be used. 
+The data can be updated, to do this the method **update** must be used.
 #####Parameters#####
 * **name:** The name of the database
 * **data:** The fields to update
@@ -414,19 +414,19 @@ The data can be updated, to do this the method **update** must be used.
 				age: 32
 			}
 		];
-	
+
 		var data ={
 			name: "user_2"
 		};
-	
+
 		var onUpdate = function(affected){
 			console.log("The number of rows updated is: " + affected);
 		};
-		
+
 		myDB.update("users", data, query, onUpdate);
 
-####Deleting an entries####
-Using the **delete** method entries can be deleted. 
+####Deleting entries####
+Using the **delete** method entries can be deleted.
 #####Parameters#####
 * **name:** The name of the database
 * **query:** The query to search entries, the same format as in select.
@@ -438,18 +438,18 @@ Using the **delete** method entries can be deleted.
 				age: 32
 			}
 		];
-		
+
 		var onDelete = function(affected){
 			console.log("The number of rows deleted is: " + affected);
 		};
-	
+
 		myDB.delete("users", query, onDelete);
 
 ####Deleting a table####
-A table can be deleted usnig the **drop** method. 
+A table can be deleted usnig the **drop** method.
 #####Parameters#####
 * **name:** The name of the database
-* **callback:** The callback to execute after droping the table 
+* **callback:** The callback to execute after droping the table
 
 		var onDropped = function(){
 			console.log("Table deleted");

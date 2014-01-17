@@ -35,20 +35,25 @@ class _indexedDB
       callback.call callback, result.length if callback?
 
   delete: (table, query=[], callback) ->
+    console.log "DELETE"
     try
       result = 0
       store = @db.transaction([table],"readwrite").objectStore(table)
       store.openCursor().onsuccess = (e) ->
         cursor = e.target.result
+        console.log cursor
         if cursor
           element = cursor.value
           if _check element, query
+            console.log "BORRAR"
             result++
             store.delete cursor.primaryKey
-            do cursor.continue
-      callback.call callback, result if callback?
+          do cursor.continue
+        else
+          callback.call callback, result if callback?
     catch exception
-     callback.call callback if callback?
+      console.log  exception
+      callback.call callback if callback?
 
   drop: (table, callback) ->
     try

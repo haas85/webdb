@@ -20,10 +20,12 @@ class _webSQL
 
 
   select: (table, query=[], callback) ->
+    console.log @
     sql = "SELECT * FROM #{table}" + _queryToSQL(query)
     @execute sql, callback
 
   insert: (table, data, callback) ->
+    console.log @
     if _typeOf(data) is "object"
       _insert table, data, callback
     else

@@ -1,10 +1,12 @@
 class _webDB
+  db: null
+  manager = null
   constructor: (@name, @schema, @version, @size=5242880, callback) ->
     if window.openDatabase
-      db = new WebDB.webSQL(@name, @schema, @version, @size, callback)
+      manager = new WebDB.webSQL(@name, @schema, @version, @size, callback)
     else if window.indexedDB
       @schema = (key for key of @schema)
-      db = new WebDB.indexedDB(@name, @schema, @version, callback)
+      manager = new WebDB.indexedDB(@name, @schema, @version, callback)
 
     if not window.openDatabase and not window.indexedDB
       @select   = -> throw "HTML5 Databases not supported"
@@ -15,12 +17,13 @@ class _webDB
       @execute  = -> throw "HTML5 Databases not supported"
       throw "HTML5 Databases not supported"
 
-    @select   = db.select
-    @insert   = db.insert
-    @update   = db.update
-    @delete   = db.delete
-    @drop     = db.drop
-    @execute  = db.execute
+    @db       = manager.db
+    @select   = manager.select
+    @insert   = manager.insert
+    @update   = manager.update
+    @delete   = manager.delete
+    @drop     = manager.drop
+    @execute  = manager.execute
 
 
 WebDB = window.WebDB = _webDB

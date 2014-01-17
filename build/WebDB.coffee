@@ -1,10 +1,12 @@
 class _webDB
+  db: null
+  manager = null
   constructor: (@name, @schema, @version, @size=5242880, callback) ->
     if window.openDatabase
-      db = new WebDB.webSQL(@name, @schema, @version, @size, callback)
+      manager = new WebDB.webSQL(@name, @schema, @version, @size, callback)
     else if window.indexedDB
       @schema = (key for key of @schema)
-      db = new WebDB.indexedDB(@name, @schema, @version, callback)
+      manager = new WebDB.indexedDB(@name, @schema, @version, callback)
 
     if not window.openDatabase and not window.indexedDB
       @select   = -> throw "HTML5 Databases not supported"
@@ -15,12 +17,13 @@ class _webDB
       @execute  = -> throw "HTML5 Databases not supported"
       throw "HTML5 Databases not supported"
 
-    @select   = db.select
-    @insert   = db.insert
-    @update   = db.update
-    @delete   = db.delete
-    @drop     = db.drop
-    @execute  = db.execute
+    @db       = manager.db
+    @select   = manager.select
+    @insert   = manager.insert
+    @update   = manager.update
+    @delete   = manager.delete
+    @drop     = manager.drop
+    @execute  = manager.execute
 
 
 WebDB = window.WebDB = _webDB
@@ -28,7 +31,6 @@ WebDB = window.WebDB = _webDB
 _mix = (receiver, emitter) -> receiver[key] = emitter[key] for key of emitter
 
 _typeOf = (obj) ->
-  console.log "TYPEOF"
   Object::.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase()
 class _indexedDB
   db: null
@@ -67,20 +69,25 @@ class _indexedDB
       callback.call callback, result.length if callback?
 
   delete: (table, query=[], callback) ->
+    console.log "DELETE"
     try
       result = 0
       store = @db.transaction([table],"readwrite").objectStore(table)
       store.openCursor().onsuccess = (e) ->
         cursor = e.target.result
+        console.log cursor
         if cursor
           element = cursor.value
           if _check element, query
+            console.log "BORRAR"
             result++
             store.delete cursor.primaryKey
-            do cursor.continue
-      callback.call callback, result if callback?
+          do cursor.continue
+        else
+          callback.call callback, result if callback?
     catch exception
-     callback.call callback if callback?
+      console.log  exception
+      callback.call callback if callback?
 
   drop: (table, callback) ->
     try
@@ -95,7 +102,7 @@ class _indexedDB
     catch exception
      callback.call callback if callback?
 
-  execute: (options) -> ""
+  execute: (sql, callbacl) -> ""
 
   _write = (_this, table, data, callback) ->
     store = _this.db.transaction([table],"readwrite").objectStore(table)
@@ -158,10 +165,12 @@ class _webSQL
 
 
   select: (table, query=[], callback) ->
+    console.log @
     sql = "SELECT * FROM #{table}" + _queryToSQL(query)
     @execute sql, callback
 
   insert: (table, data, callback) ->
+    console.log @
     if _typeOf(data) is "object"
       _insert table, data, callback
     else
