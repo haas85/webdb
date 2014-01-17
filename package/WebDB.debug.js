@@ -75,8 +75,14 @@
       if (!window.indexedDB) {
         throw "IndexedDB not supported";
       }
-      openRequest = indexedDB.open(dbName, version);
+      openRequest = indexedDB.open(name, version);
       openRequest.onsuccess = function(e) {
+        return _this.db = e.target.result;
+      };
+      openRequest.onerror = function(e) {
+        throw "Error opening database";
+      };
+      openRequest.onupgradeneeded = function(e) {
         var table, _i, _len;
         _this.db = e.target.result;
         for (_i = 0, _len = schema.length; _i < _len; _i++) {
@@ -89,8 +95,8 @@
           return callback.call(callback);
         }
       };
-      openRequest.onerror = function(e) {
-        throw "Error opening database";
+      openRequest.onversionchange = function(e) {
+        return console.log(e);
       };
     }
 

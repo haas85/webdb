@@ -3,16 +3,19 @@ class _indexedDB
 
   constructor: (name, schema, version=1, callback) ->
     throw "IndexedDB not supported" if not window.indexedDB
-    openRequest = indexedDB.open(dbName, version)
-    openRequest.onsuccess = (e) =>
+    openRequest = indexedDB.open(name, version)
+    openRequest.onsuccess = (e) => @db = e.target.result
+
+    openRequest.onerror = (e) -> throw "Error opening database"
+
+    openRequest.onupgradeneeded = (e) =>
       @db = e.target.result
       for table in schema
         @db.createObjectStore table if not @db.objectStoreNames.contains table
 
       callback.call callback if callback?
 
-    openRequest.onerror = (e) ->
-      throw "Error opening database"
+    openRequest.onversionchange = (e) -> console.log e
 
 
   select: (table, query=[], callback) ->
