@@ -141,13 +141,40 @@
       }
       return _queryOp(this.db, table, data, query, function(result) {
         if (callback != null) {
-          return callback.call(callback, 1);
+          return callback.call(callback, result.length);
         }
       });
     };
 
-    _indexedDB.prototype["delete"] = function(options) {
-      return "";
+    _indexedDB.prototype["delete"] = function(table, query, callback) {
+      var exception, result, store;
+      if (query == null) {
+        query = [];
+      }
+      try {
+        result = 0;
+        store = this.db.transaction([table], "readwrite").objectStore(table);
+        store.openCursor().onsuccess = function(e) {
+          var cursor, element;
+          cursor = e.target.result;
+          if (cursor) {
+            element = cursor.value;
+            if (_check(element, query)) {
+              result++;
+              store["delete"](cursor.primaryKey);
+              return cursor["continue"]();
+            }
+          }
+        };
+        if (callback != null) {
+          return callback.call(callback, result);
+        }
+      } catch (_error) {
+        exception = _error;
+        if (callback != null) {
+          return callback.call(callback);
+        }
+      }
     };
 
     _indexedDB.prototype.drop = function(table, callback) {
@@ -162,7 +189,9 @@
             return cursor["continue"]();
           }
         };
-        return callback.call(callbackif(callback != null));
+        if (callback != null) {
+          return callback.call(callback);
+        }
       } catch (_error) {
         exception = _error;
         if (callback != null) {
@@ -238,7 +267,7 @@
           return cursor["continue"]();
         } else {
           if (callback != null) {
-            return callback.call(callback, null, result);
+            return callback.call(callback, result);
           }
         }
       };

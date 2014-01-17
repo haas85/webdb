@@ -32,9 +32,23 @@ class _indexedDB
 
   update: (table, data, query=[], callback) ->
     _queryOp @db, table, data, query, (result) ->
-      callback.call callback, 1 if callback?
+      callback.call callback, result.length if callback?
 
-  delete: (options) -> ""
+  delete: (table, query=[], callback) ->
+    try
+      result = 0
+      store = @db.transaction([table],"readwrite").objectStore(table)
+      store.openCursor().onsuccess = (e) ->
+        cursor = e.target.result
+        if cursor
+          element = cursor.value
+          if _check element, query
+            result++
+            store.delete cursor.primaryKey
+            do cursor.continue
+      callback.call callback, result if callback?
+    catch exception
+     callback.call callback if callback?
 
   drop: (table, callback) ->
     try
@@ -45,7 +59,7 @@ class _indexedDB
           store.delete cursor.primaryKey
           do cursor.continue
       # to drop completely, a version change must be executed
-      callback.call callbackif callback?
+      callback.call callback if callback?
     catch exception
      callback.call callback if callback?
 
@@ -87,7 +101,7 @@ class _indexedDB
           result.push element
         do cursor.continue
       else
-        callback.call callback, null, result if callback?
+        callback.call callback, result if callback?
 
   _mix = (receiver, emitter) -> receiver[key] = emitter[key] for key of emitter
 
