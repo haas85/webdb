@@ -109,6 +109,7 @@ The data can be updated, to do this the method **update** must be used.
 * **data:** The fields to update
 * **query:** The query to search entries, the same format as in select.
 * **callback:** The callback that will receive the number of entries modified
+
 		var query = [
 			{
 				name: "user2",
@@ -258,6 +259,7 @@ The data can be updated, to do this the method **update** must be used.
 * **data:** The fields to update
 * **query:** The query to search entries, the same format as in select.
 * **callback:** The callback that will receive the number of entries modified
+
 		var query = [
 			{
 				name: "user2",
@@ -405,6 +407,7 @@ The data can be updated, to do this the method **update** must be used.
 * **data:** The fields to update
 * **query:** The query to search entries, the same format as in select.
 * **callback:** The callback that will receive the number of entries modified
+
 		var query = [
 			{
 				name: "user2",
