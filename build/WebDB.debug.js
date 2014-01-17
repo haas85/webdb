@@ -127,7 +127,7 @@
           _results.push(_write(this, table, row, function() {
             len--;
             if (len === 0 && (callback != null)) {
-              return callback.call(callback);
+              return callback.call(callback, data.length);
             }
           }));
         }
@@ -139,7 +139,11 @@
       if (query == null) {
         query = [];
       }
-      return _queryOp(this.db, table, data, query, callback);
+      return _queryOp(this.db, table, data, query, function(result) {
+        if (callback != null) {
+          return callback.call(callback, 1);
+        }
+      });
     };
 
     _indexedDB.prototype["delete"] = function(options) {
@@ -172,12 +176,12 @@
       request = store.add(data);
       request.onerror = function(e) {
         if (callback != null) {
-          return callback.call(callback, e, null);
+          return callback.call(callback, null);
         }
       };
       return request.onsuccess = function(result) {
         if (callback != null) {
-          return callback.call(callback, null, result);
+          return callback.call(callback, 1);
         }
       };
     };
@@ -207,12 +211,13 @@
     };
 
     _queryOp = function(db, table, data, query, callback) {
-      var result;
+      var op, result;
       if (query == null) {
         query = [];
       }
       result = [];
-      return db.transaction([table], "readonly").objectStore(table).openCursor().onsuccess = function(e) {
+      op = data != null ? "readwrite" : "readonly";
+      return db.transaction([table], op).objectStore(table).openCursor().onsuccess = function(e) {
         var cursor, element;
         cursor = e.target.result;
         if (cursor) {

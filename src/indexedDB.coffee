@@ -18,8 +18,7 @@ class _indexedDB
 
     openRequest.onversionchange = (e) -> console.log e
 
-  select: (table, query=[], callback) ->
-    _queryOp @db, table, null, query, callback
+  select: (table, query=[], callback) -> _queryOp @db, table, null, query, callback
 
   insert: (table, data, callback) ->
     if _typeOf(data) is "object"
@@ -29,10 +28,11 @@ class _indexedDB
       for row in data
         _write @, table, row, () ->
           len--
-          callback.call callback if len is 0  and callback?
+          callback.call callback, data.length if len is 0  and callback?
 
   update: (table, data, query=[], callback) ->
-    _queryOp @db, table, data, query, callback
+    _queryOp @db, table, data, query, (result) ->
+      callback.call callback, 1 if callback?
 
   delete: (options) -> ""
 
@@ -50,10 +50,10 @@ class _indexedDB
     store = _this.db.transaction([table],"readwrite").objectStore(table)
     request = store.add data
     request.onerror = (e) ->
-      callback.call callback, e, null if callback?
+      callback.call callback, null if callback?
 
     request.onsuccess = (result) ->
-      callback.call callback, null, result if callback?
+      callback.call callback, 1 if callback?
 
   _check = (element, query=[]) ->
     return true if query.length is 0
@@ -69,7 +69,8 @@ class _indexedDB
 
   _queryOp = (db, table, data, query=[], callback) ->
     result = []
-    db.transaction([table],"readonly").objectStore(table).openCursor().onsuccess = (e) ->
+    op = if data? then "readwrite" else "readonly"
+    db.transaction([table], op).objectStore(table).openCursor().onsuccess = (e) ->
       cursor = e.target.result
       if cursor
         element = cursor.value
