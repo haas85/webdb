@@ -16,7 +16,8 @@ class _indexedDB
       for table in schema
         @db.createObjectStore table, options if not @db.objectStoreNames.contains table
 
-    openRequest.onversionchange = (e) -> console.log e
+    openRequest.onversionchange = (e) ->
+      console.log e
 
   select: (table, query=[], callback) -> _queryOp @db, table, null, query, callback
 
@@ -35,24 +36,20 @@ class _indexedDB
       callback.call callback, result.length if callback?
 
   delete: (table, query=[], callback) ->
-    console.log "DELETE"
     try
       result = 0
       store = @db.transaction([table],"readwrite").objectStore(table)
       store.openCursor().onsuccess = (e) ->
         cursor = e.target.result
-        console.log cursor
         if cursor
           element = cursor.value
           if _check element, query
-            console.log "BORRAR"
             result++
             store.delete cursor.primaryKey
           do cursor.continue
         else
           callback.call callback, result if callback?
     catch exception
-      console.log  exception
       callback.call callback if callback?
 
   drop: (table, callback) ->

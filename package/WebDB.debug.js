@@ -166,18 +166,15 @@
       if (query == null) {
         query = [];
       }
-      console.log("DELETE");
       try {
         result = 0;
         store = this.db.transaction([table], "readwrite").objectStore(table);
         return store.openCursor().onsuccess = function(e) {
           var cursor, element;
           cursor = e.target.result;
-          console.log(cursor);
           if (cursor) {
             element = cursor.value;
             if (_check(element, query)) {
-              console.log("BORRAR");
               result++;
               store["delete"](cursor.primaryKey);
             }
@@ -190,7 +187,6 @@
         };
       } catch (_error) {
         exception = _error;
-        console.log(exception);
         if (callback != null) {
           return callback.call(callback);
         }
@@ -339,14 +335,12 @@
       if (query == null) {
         query = [];
       }
-      console.log(this);
       sql = ("SELECT * FROM " + table) + _queryToSQL(query);
       return this.execute(sql, callback);
     };
 
     _webSQL.prototype.insert = function(table, data, callback) {
       var len, result, row, _i, _len, _results;
-      console.log(this);
       if (_typeOf(data) === "object") {
         return _insert(table, data, callback);
       } else {
