@@ -87,7 +87,4 @@ class _webSQL
 
   _setValue = (value) -> if isNaN(value) then "'#{value}'" else value
 
-  _typeOf = (obj) ->
-    Object::.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase()
-
 WebDB.webSQL = _webSQL

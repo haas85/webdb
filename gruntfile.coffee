@@ -22,8 +22,12 @@ module.exports = (grunt) ->
 
     # =========================================================================
     coffee:
-      core: files: '<%=meta.temp%>/<%=meta.file%>.debug.js': '<%= source.coffee %>'
-      core_debug: files: '<%=meta.package%>/<%=meta.file%>.debug.js': '<%= source.coffee %>'
+      core: files: '<%=meta.temp%>/<%=meta.file%>.debug.js': '<%=meta.temp%>/<%=meta.file%>.coffee'
+      core_debug: files: '<%=meta.package%>/<%=meta.file%>.debug.js': '<%=meta.temp%>/<%=meta.file%>.coffee'
+
+    concat:
+      components:
+        src: "<%= source.coffee %>",  dest: "<%=meta.temp%>/<%=meta.file%>.coffee"
 
     uglify:
       options: compress: false, banner: "<%= meta.banner %>"
@@ -35,7 +39,8 @@ module.exports = (grunt) ->
         tasks: ["coffee:core", "coffee:core_debug", "uglify:engine"]
 
   grunt.loadNpmTasks "grunt-contrib-coffee"
+  grunt.loadNpmTasks "grunt-contrib-concat"
   grunt.loadNpmTasks "grunt-contrib-uglify"
   grunt.loadNpmTasks "grunt-contrib-watch"
 
-  grunt.registerTask "default", [ "coffee", "uglify"]
+  grunt.registerTask "default", ["concat", "coffee", "uglify"]

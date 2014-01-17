@@ -7,6 +7,7 @@
   "dependencies": {
     "grunt-contrib-coffee": "*",
     "grunt-contrib-uglify": "*",
+    "grunt-contrib-concat": "*",
     "grunt-contrib-watch": "*"
   }
 }

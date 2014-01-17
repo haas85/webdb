@@ -1,5 +1,5 @@
 (function() {
-  var WebDB, _webDB;
+  var WebDB, _indexedDB, _mix, _typeOf, _webDB, _webSQL;
 
   _webDB = (function() {
     function _webDB(name, schema, version, size, callback) {
@@ -56,13 +56,22 @@
 
   WebDB = window.WebDB = _webDB;
 
-}).call(this);
+  _mix = function(receiver, emitter) {
+    var key, _results;
+    _results = [];
+    for (key in emitter) {
+      _results.push(receiver[key] = emitter[key]);
+    }
+    return _results;
+  };
 
-(function() {
-  var _indexedDB;
+  _typeOf = function(obj) {
+    console.log("TYPEOF");
+    return Object.prototype.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase();
+  };
 
   _indexedDB = (function() {
-    var _check, _mix, _queryOp, _typeOf, _write;
+    var _check, _queryOp, _write;
 
     _indexedDB.prototype.db = null;
 
@@ -273,32 +282,14 @@
       };
     };
 
-    _mix = function(receiver, emitter) {
-      var key, _results;
-      _results = [];
-      for (key in emitter) {
-        _results.push(receiver[key] = emitter[key]);
-      }
-      return _results;
-    };
-
-    _typeOf = function(obj) {
-      return Object.prototype.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase();
-    };
-
     return _indexedDB;
 
   })();
 
   WebDB.indexedDB = _indexedDB;
 
-}).call(this);
-
-(function() {
-  var _webSQL;
-
   _webSQL = (function() {
-    var _insert, _queryToSQL, _setValue, _this, _typeOf;
+    var _insert, _queryToSQL, _setValue, _this;
 
     _webSQL.prototype.db = null;
 
@@ -457,10 +448,6 @@
       } else {
         return value;
       }
-    };
-
-    _typeOf = function(obj) {
-      return Object.prototype.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase();
     };
 
     return _webSQL;

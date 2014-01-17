@@ -24,3 +24,8 @@ class _webDB
 
 
 WebDB = window.WebDB = _webDB
+
+_mix = (receiver, emitter) -> receiver[key] = emitter[key] for key of emitter
+
+_typeOf = (obj) ->
+  Object::.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase()
