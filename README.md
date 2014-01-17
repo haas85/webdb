@@ -15,127 +15,155 @@ How it works
 It is the most common HTML5 database engine, supported by Chrome, Safari, Opera, IOS, Android and BlackBerry [As you can see here](http://caniuse.com/#search=websql).
 
 ####Creating a Database and schema####
-To create a database and its table schemas you just have to create a new instance of **WebDB.webSQL**, using as arguments the name, the schema, version, size, and a callback:
+To create a database and its table schemas you just have to create a new instance of **WebDB.webSQL**.
+#####Parameters#####
+* **name:** the name of the database
+* **schema:** The schema, its structure is explained in the next code
+* **version:** version of the database
+* **size:** The ammount of space in Mb to allocate
+* **callback:** The method to call after creating the database
 
-	//The first level of the schema defines the table, and its content the atributes and types:
-	var schema = {
-		users:{
-			name: "TEXT",
-			email: "TEXT",
-			age: "NUMBER"
-		},
-		posts: {
-			title: "TEXT",
-			content: "TEXT"
-		}
-	};
+
+		//The first level of the schema defines the table, and its content the atributes and types:
+		var schema = {
+			users:{
+				name: "TEXT",
+				email: "TEXT",
+				age: "NUMBER"
+			},
+			posts: {
+				title: "TEXT",
+				content: "TEXT"
+			}
+		};
 	
-	var onCreated = function(){
-		alert("Database Created");
-	};
+		var onCreated = function(){
+			alert("Database Created");
+		};
 	
-	var myDB = new WebDB.webSQL("MyDB", schema, 1, 5242880, onCreated);
+		var myDB = new WebDB.webSQL("MyDB", schema, 1, 5242880, onCreated);
 	
 ####Inserting Data####
-The instance that previously has been created has several methods the first one is **insert**. Data can be inserted one by one or in an array, to do this, the parameters needed are table, data and callback
+The instance that previously has been created has several methods the first one is **insert**. Data can be inserted one by one or in an array.
+#####Parameters#####
+* **table:** The name of the table
+* **data:** Data in object or array to insert
+* **callback:** The callback that will receive the number of insertions
 
-	var single_data = {
-		name: "haas85",
-		email: "inigo@ingonza.com",
-		age: 29
-	};
+		var single_data = {
+			name: "haas85",
+			email: "inigo@ingonza.com",
+			age: 29
+		};
 	
-	var multiple_data = [
-		{
-			name: "user2",
-			email: "user2@gmail.com",
-			age: 32
-		},
-		{
-			name: "user3",
-			email: "user3@gmail.com",
-			age: 24
-		},
+		var multiple_data = [
+			{
+				name: "user2",
+				email: "user2@gmail.com",
+				age: 32
+			},
+			{
+				name: "user3",
+				email: "user3@gmail.com",
+				age: 24
+			},
 
-	];
+		];
 	
-	var onInserted = function(inserts){
-		alert("The amount of rows inserted is: " + inserts);
-	};
+		var onInserted = function(inserts){
+			alert("The amount of rows inserted is: " + inserts);
+		};
 	
-	myDB.insert("users", single_data, onInserted);
-	myDB.insert("users", multiple_data, onInserted);
+		myDB.insert("users", single_data, onInserted);
+		myDB.insert("users", multiple_data, onInserted);
 	
 ####Getting the data####
-You can get the stored data using the **select** method. This method requires as parameters the table, the query, and the callback that will receive the result. The format of the query is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR:
-
-	var query = [
-		{
-			name: "haas85",
-			age: 29
-		},
-		{
-			age: 24
-		}
-	];
-	// This is like: WHERE (name = 'haas85' AND age = 29) OR (age = 24)
+You can get the stored data using the **select** method. 
+#####Parameters#####
+* **name:** The name of the database
+* **query:** The search query, its format is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR.
+* **callback:** The callback that will receive the result of the query.
+		var query = [
+			{
+				name: "haas85",
+				age: 29
+			},
+			{
+				age: 24
+			}
+		];
+		// This is like: WHERE (name = 'haas85' AND age = 29) OR (age = 24)
 	
-	var onUsers = function(users){
-		console.log("This is an array of objects from the DB");
-		console.log(users);
-	};
+		var onUsers = function(users){
+			console.log("This is an array of objects from the DB");
+			console.log(users);
+		};
 	
-	myDB.select("users", query, onUsers)
+		myDB.select("users", query, onUsers)
 	
 ####Updating entries####
-The data can be updated, to do this the method **update** must be used. The parameters that it receives are table, data, query and callback. The query is in the same format as the select method. The callback will receive the number of rows affected by the update query.
-
-	var query = [
-		{
-			name: "user2",
-			age: 32
-		}
-	];
+The data can be updated, to do this the method **update** must be used. 
+#####Parameters#####
+* **name:** The name of the database
+* **data:** The fields to update
+* **query:** The query to search entries, the same format as in select.
+* **callback:** The callback that will receive the number of entries modified
+		var query = [
+			{
+				name: "user2",
+				age: 32
+			}
+		];
 	
-	var data ={
-		name: "user_2"
-	};
+		var data ={
+			name: "user_2"
+		};
 	
-	var onUpdate = function(affected){
-		console.log("The number of rows updated is: " + affected);
-	};
-	
-	myDB.update("users", data, query, onUpdate);
+		var onUpdate = function(affected){
+			console.log("The number of rows updated is: " + affected);
+		};
+		
+		myDB.update("users", data, query, onUpdate);
 
 ####Deleting an entries####
-Using the **delete** method entries can be deleted. The parameters it uses is the table, the query (same format that select and update), and a callback that receives the number of entries deleted.
+Using the **delete** method entries can be deleted. 
+#####Parameters#####
+* **name:** The name of the database
+* **query:** The query to search entries, the same format as in select.
+* **callback:** The callback that will receive the number of entries deleted
 
-	var query = [
-		{
-			name: "user_2",
-			age: 32
-		}
-	];
+		var query = [
+			{
+				name: "user_2",
+				age: 32
+			}
+		];
+		
+		var onDelete = function(affected){
+			console.log("The number of rows deleted is: " + affected);
+		};
 	
-	var onDelete = function(affected){
-		console.log("The number of rows deleted is: " + affected);
-	};
-	
-	myDB.delete("users", query, onDelete);
+		myDB.delete("users", query, onDelete);
 
 ####Deleting a table####
-A table can be deleted usnig the **drop** method. This receives as arguments the table and a callback.
+A table can be deleted usnig the **drop** method. 
+#####Parameters#####
+* **name:** The name of the database
+* **callback:** The callback to execute after droping the table 
 
-	var onDropped = function(){
-		console.log("Table deleted");
-	};
-	myDB.drop("posts", onDropped);
+		var onDropped = function(){
+			console.log("Table deleted");
+		};
+		myDB.drop("posts", onDropped);
 	
 ####Pure SQL####
 Maybe this methods aren't enough for you, so you can execute your own SQL with the **execute** method.
+#####Parameters#####
+* **sql:** The SQL to execute
+* **callback**: A callback that will receive the result (entries or number of entries modified)
 
-	var onSQL = function(result){
-		console.log("If is a select result has the rows, else it has the number of rows affected");
-	};
+		var onSQL = function(result){
+			console.log("If is a select result has the rows, else it has the number of rows affected");
+		};
 	
-	myDB.execute("SELECT * FROM users WHERE age > 22", onSQL);
+		myDB.execute("SELECT * FROM users WHERE age > 22", onSQL);
