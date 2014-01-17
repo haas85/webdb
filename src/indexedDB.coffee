@@ -63,7 +63,7 @@ class _indexedDB
     catch exception
      callback.call callback if callback?
 
-  execute: (options) -> ""
+  execute: (sql, callbacl) -> ""
 
   _write = (_this, table, data, callback) ->
     store = _this.db.transaction([table],"readwrite").objectStore(table)
