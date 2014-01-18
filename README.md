@@ -455,3 +455,12 @@ A table can be deleted usnig the **drop** method.
 			console.log("Table deleted");
 		};
 		myDB.drop("posts", onDropped);
+		
+		
+What is next?
+-------------
+The next improvements that are coming are:
+
+* Query modificators such as bigger, smaller and like
+* Group by, order by
+* Count, distinct
