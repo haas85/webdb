@@ -343,7 +343,6 @@
       if (query == null) {
         query = [];
       }
-      console.log(this);
       sql = ("SELECT * FROM " + table) + _queryToSQL(query);
       return this.execute(sql, callback);
     };
