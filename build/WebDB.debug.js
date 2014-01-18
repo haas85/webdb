@@ -2,14 +2,10 @@
   var WebDB, _indexedDB, _mix, _typeOf, _webDB, _webSQL;
 
   _webDB = (function() {
-    var manager;
-
     _webDB.prototype.db = null;
 
-    manager = null;
-
     function _webDB(name, schema, version, size, callback) {
-      var key;
+      var key, manager;
       this.name = name;
       this.schema = schema;
       this.version = version;
@@ -49,12 +45,24 @@
         throw "HTML5 Databases not supported";
       }
       this.db = manager.db;
-      this.select = manager.select;
-      this.insert = manager.insert;
-      this.update = manager.update;
-      this["delete"] = manager["delete"];
-      this.drop = manager.drop;
-      this.execute = manager.execute;
+      this.select = function() {
+        return manager.select.apply(manager, arguments);
+      };
+      this.insert = function() {
+        return manager.insert.apply(manager, arguments);
+      };
+      this.update = function() {
+        return manager.update.apply(manager, arguments);
+      };
+      this["delete"] = function() {
+        return manager["delete"].apply(manager, arguments);
+      };
+      this.drop = function() {
+        return manager.drop.apply(manager, arguments);
+      };
+      this.execute = function() {
+        return manager.execute.apply(manager, arguments);
+      };
     }
 
     return _webDB;
@@ -335,6 +343,7 @@
       if (query == null) {
         query = [];
       }
+      console.log(this);
       sql = ("SELECT * FROM " + table) + _queryToSQL(query);
       return this.execute(sql, callback);
     };

@@ -1,6 +1,5 @@
 class _webDB
   db: null
-  manager = null
   constructor: (@name, @schema, @version, @size=5242880, callback) ->
     if window.openDatabase
       manager = new WebDB.webSQL(@name, @schema, @version, @size, callback)
@@ -18,12 +17,12 @@ class _webDB
       throw "HTML5 Databases not supported"
 
     @db       = manager.db
-    @select   = manager.select
-    @insert   = manager.insert
-    @update   = manager.update
-    @delete   = manager.delete
-    @drop     = manager.drop
-    @execute  = manager.execute
+    @select   = -> manager.select.apply manager, arguments
+    @insert   = -> manager.insert.apply manager, arguments
+    @update   = -> manager.update.apply manager, arguments
+    @delete   = -> manager.delete.apply manager, arguments
+    @drop     = -> manager.drop.apply manager, arguments
+    @execute  = -> manager.execute.apply manager, arguments
 
 
 WebDB = window.WebDB = _webDB
