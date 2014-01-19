@@ -4,7 +4,7 @@ module.exports = (grunt) ->
     pkg: grunt.file.readJSON "package.json"
 
     meta:
-      file   : 'WebDB'
+      file   : 'webdb'
       package : "package",
       temp   : "build",
       banner : """
