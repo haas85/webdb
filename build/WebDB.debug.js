@@ -1,6 +1,8 @@
 (function() {
   var WebDB, _indexedDB, _mix, _typeOf, _webDB, _webSQL;
 
+  window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB;
+
   _webDB = (function() {
     _webDB.prototype.db = null;
 

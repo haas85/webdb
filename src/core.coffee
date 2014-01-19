@@ -1,3 +1,5 @@
+window.indexedDB = window.indexedDB or window.webkitIndexedDB or window.mozIndexedDB
+
 class _webDB
   db: null
   constructor: (@name, @schema, @version, @size=5242880, callback) ->
