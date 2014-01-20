@@ -1,7 +1,7 @@
 WebDB
 =====
 
-Javascript HTML5 databases IndexedDB and WebSql agnostic framework.
+Javascript framework to use HTML5 database engines IndexedDB and WebSql in an agnostic way.
 What is WebDB?
 --------------
 WebDB is a javascript framework to ease the use of HTML5 database engines (webSQL and indexedDB). It also includes an agnostic mode to allow the engine to use the database engine if it is supported by the browser.
@@ -12,7 +12,7 @@ WebDB has an agnostic mode to work with HTML5 databases using the browser's supp
 In both three modes the api is the same, but what changes is the constructor.
 ###Agnostic mode###
 -------------------
-This ode has a generic api to allow developers to work with the browser's supported database engine without the need of knowing what database is supported.
+This mode has a generic api to allow developers to work with the browser's supported database engine without the need of knowing what database is supported.
 
 ####Creating a Database and schema####
 To create a database and its table schemas you just have to create a new instance of **WebDB**.
