@@ -1,12 +1,12 @@
 (function() {
-  var WebDB, _indexedDB, _mix, _typeOf, _webDB, _webSQL;
+  var WebDB, indexedDB, webDB, webSQL, _mix, _typeOf;
 
   window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB;
 
-  _webDB = (function() {
-    _webDB.prototype.db = null;
+  webDB = (function() {
+    webDB.prototype.db = null;
 
-    function _webDB(name, schema, version, size, callback) {
+    function webDB(name, schema, version, size, callback) {
       var key, manager;
       this.name = name;
       this.schema = schema;
@@ -67,11 +67,11 @@
       };
     }
 
-    return _webDB;
+    return webDB;
 
   })();
 
-  WebDB = window.WebDB = _webDB;
+  WebDB = window.WebDB = webDB;
 
   _mix = function(receiver, emitter) {
     var key, _results;
@@ -86,12 +86,12 @@
     return Object.prototype.toString.call(obj).match(/[a-zA-Z] ([a-zA-Z]+)/)[1].toLowerCase();
   };
 
-  _indexedDB = (function() {
+  indexedDB = (function() {
     var _check, _queryOp, _write;
 
-    _indexedDB.prototype.db = null;
+    indexedDB.prototype.db = null;
 
-    function _indexedDB(name, schema, version, callback) {
+    function indexedDB(name, schema, version, callback) {
       var openRequest,
         _this = this;
       if (version == null) {
@@ -133,14 +133,14 @@
       };
     }
 
-    _indexedDB.prototype.select = function(table, query, callback) {
+    indexedDB.prototype.select = function(table, query, callback) {
       if (query == null) {
         query = [];
       }
       return _queryOp(this.db, table, null, query, callback);
     };
 
-    _indexedDB.prototype.insert = function(table, data, callback) {
+    indexedDB.prototype.insert = function(table, data, callback) {
       var len, row, _i, _len, _results;
       if (_typeOf(data) === "object") {
         return _write(this, table, data, callback);
@@ -160,7 +160,7 @@
       }
     };
 
-    _indexedDB.prototype.update = function(table, data, query, callback) {
+    indexedDB.prototype.update = function(table, data, query, callback) {
       if (query == null) {
         query = [];
       }
@@ -171,7 +171,7 @@
       });
     };
 
-    _indexedDB.prototype["delete"] = function(table, query, callback) {
+    indexedDB.prototype["delete"] = function(table, query, callback) {
       var exception, result, store;
       if (query == null) {
         query = [];
@@ -203,7 +203,7 @@
       }
     };
 
-    _indexedDB.prototype.drop = function(table, callback) {
+    indexedDB.prototype.drop = function(table, callback) {
       var exception, store;
       try {
         store = this.db.transaction([table], "readwrite").objectStore(table);
@@ -226,7 +226,7 @@
       }
     };
 
-    _indexedDB.prototype.execute = function(sql, callbacl) {
+    indexedDB.prototype.execute = function(sql, callbacl) {
       return "";
     };
 
@@ -299,20 +299,20 @@
       };
     };
 
-    return _indexedDB;
+    return indexedDB;
 
   })();
 
-  WebDB.indexedDB = _indexedDB;
+  WebDB.indexedDB = indexedDB;
 
-  _webSQL = (function() {
+  webSQL = (function() {
     var _insert, _queryToSQL, _setValue, _this;
 
-    _webSQL.prototype.db = null;
+    webSQL.prototype.db = null;
 
     _this = null;
 
-    function _webSQL(name, schema, version, size, callback) {
+    function webSQL(name, schema, version, size, callback) {
       var row, sql, table, _tables;
       if (size == null) {
         size = 5;
@@ -340,7 +340,7 @@
       }
     }
 
-    _webSQL.prototype.select = function(table, query, callback) {
+    webSQL.prototype.select = function(table, query, callback) {
       var sql;
       if (query == null) {
         query = [];
@@ -349,7 +349,7 @@
       return this.execute(sql, callback);
     };
 
-    _webSQL.prototype.insert = function(table, data, callback) {
+    webSQL.prototype.insert = function(table, data, callback) {
       var len, result, row, _i, _len, _results;
       if (_typeOf(data) === "object") {
         return _insert(table, data, callback);
@@ -371,7 +371,7 @@
       }
     };
 
-    _webSQL.prototype.update = function(table, data, query, callback) {
+    webSQL.prototype.update = function(table, data, query, callback) {
       var key, sql;
       if (query == null) {
         query = [];
@@ -384,7 +384,7 @@
       return this.execute(sql, callback);
     };
 
-    _webSQL.prototype["delete"] = function(table, query, callback) {
+    webSQL.prototype["delete"] = function(table, query, callback) {
       var sql;
       if (query == null) {
         query = [];
@@ -393,11 +393,11 @@
       return this.execute(sql, callback);
     };
 
-    _webSQL.prototype.drop = function(table, callback) {
+    webSQL.prototype.drop = function(table, callback) {
       return this.execute("DROP TABLE IF EXISTS " + table, callback);
     };
 
-    _webSQL.prototype.execute = function(sql, callback) {
+    webSQL.prototype.execute = function(sql, callback) {
       if (!this.db) {
         throw "Database not initializated";
       } else {
@@ -467,10 +467,10 @@
       }
     };
 
-    return _webSQL;
+    return webSQL;
 
   })();
 
-  WebDB.webSQL = _webSQL;
+  WebDB.webSQL = webSQL;
 
 }).call(this);

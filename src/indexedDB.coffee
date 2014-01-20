@@ -1,4 +1,4 @@
-class _indexedDB
+class indexedDB
   db: null
 
   constructor: (name, schema, version=1, callback) ->
@@ -105,4 +105,4 @@ class _indexedDB
       else
         callback.call callback, result if callback?
 
-WebDB.indexedDB = _indexedDB
+WebDB.indexedDB = indexedDB

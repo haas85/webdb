@@ -1,4 +1,4 @@
-class _webSQL
+class webSQL
   db: null
   _this = null
 
@@ -87,4 +87,4 @@ class _webSQL
 
   _setValue = (value) -> if isNaN(value) then "'#{value}'" else value
 
-WebDB.webSQL = _webSQL
+WebDB.webSQL = webSQL

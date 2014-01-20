@@ -1,6 +1,6 @@
 window.indexedDB = window.indexedDB or window.webkitIndexedDB or window.mozIndexedDB
 
-class _webDB
+class webDB
   db: null
   constructor: (@name, @schema, @version, @size=5242880, callback) ->
     if window.openDatabase
@@ -27,7 +27,7 @@ class _webDB
     @execute  = -> manager.execute.apply manager, arguments
 
 
-WebDB = window.WebDB = _webDB
+WebDB = window.WebDB = webDB
 
 _mix = (receiver, emitter) -> receiver[key] = emitter[key] for key of emitter
 
