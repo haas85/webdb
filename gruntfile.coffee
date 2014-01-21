@@ -40,7 +40,7 @@ module.exports = (grunt) ->
     watch:
       coffee:
         files: ["<%= source.coffee %>"]
-        tasks: ["concat:modules", "coffee:core", "coffee:core_debug", "uglify:engine"]
+        tasks: ["concat:modules", "coffee:core", "coffee:core_debug", "uglify:engine", "usebanner:banner"]
 
   grunt.loadNpmTasks "grunt-contrib-coffee"
   grunt.loadNpmTasks "grunt-contrib-concat"
