@@ -1,7 +1,7 @@
 WebDB
 =====
 
-Javascript framework to use HTML5 database engines IndexedDB and WebSql in an agnostic way.
+Javascript library to use HTML5 database engines IndexedDB and WebSql in an agnostic way.
 What is WebDB?
 --------------
 WebDB is a javascript framework to ease the use of HTML5 database engines (webSQL and indexedDB). It also includes an agnostic mode to allow the engine to use the database engine if it is supported by the browser.
