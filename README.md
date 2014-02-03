@@ -461,6 +461,7 @@ What is next?
 -------------
 The next improvements that are coming are:
 
+* Auto versioning
 * Query modificators such as bigger, smaller and like
 * Group by, order by
 * Count, distinct
