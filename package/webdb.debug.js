@@ -1,4 +1,4 @@
-/* WebDB v1.0.0 - 1/21/2014
+/* WebDB v1.0.0 - 2/22/2014
    http://github.com/haas85/webdb
    Copyright (c) 2014 Iñigo Gonzalez Vazquez <ingonza85@gmail.com> (@haas85) - Under MIT License */
 (function() {
@@ -103,7 +103,7 @@
       if (!window.indexedDB) {
         throw "IndexedDB not supported";
       }
-      openRequest = indexedDB.open(name, version);
+      openRequest = window.indexedDB.open(name, version);
       openRequest.onsuccess = function(e) {
         _this.db = e.target.result;
         if (callback != null) {
@@ -324,7 +324,7 @@
         throw "WebSQL not supported";
       }
       size = size * 1024 * 1024;
-      this.db = openDatabase(name, version, "", size);
+      this.db = window.openDatabase(name, version, "", size);
       _tables = 0;
       for (table in schema) {
         sql = "CREATE TABLE IF NOT EXISTS " + table + " (";

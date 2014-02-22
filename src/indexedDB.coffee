@@ -3,7 +3,7 @@ class indexedDB
 
   constructor: (name, schema, version=1, callback) ->
     throw "IndexedDB not supported" if not window.indexedDB
-    openRequest = indexedDB.open(name, version)
+    openRequest = window.indexedDB.open(name, version)
     openRequest.onsuccess = (e) =>
       @db = e.target.result
       callback.call callback if callback?

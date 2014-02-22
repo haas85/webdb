@@ -5,7 +5,7 @@ class webSQL
   constructor: (name, schema, version, size=5, callback) ->
     throw "WebSQL not supported" if not window.openDatabase
     size = size * 1024 * 1024
-    @db = openDatabase name, version, "", size
+    @db = window.openDatabase name, version, "", size
     _tables = 0
     for table of schema
       sql = "CREATE TABLE IF NOT EXISTS #{table} ("
