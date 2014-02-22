@@ -3,11 +3,11 @@ window.indexedDB = window.indexedDB or window.webkitIndexedDB or window.mozIndex
 class webDB
   db: null
   constructor: (@name, @schema, @version, @size=5242880, callback) ->
-    if window.openDatabase
-      manager = new WebDB.webSQL(@name, @schema, @version, @size, callback)
-    else if window.indexedDB
+    if window.indexedDB
       @schema = (key for key of @schema)
       manager = new WebDB.indexedDB(@name, @schema, @version, callback)
+    else if window.openDatabase
+      manager = new WebDB.webSQL(@name, @schema, @version, @size, callback)
 
     if not window.openDatabase and not window.indexedDB
       @select   = -> throw "HTML5 Databases not supported"

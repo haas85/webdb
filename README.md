@@ -7,7 +7,7 @@ What is WebDB?
 WebDB is a javascript framework to ease the use of HTML5 database engines (webSQL and indexedDB). It also includes an agnostic mode to allow the engine to use the database engine if it is supported by the browser.
 How it works
 ------------
-WebDB has an agnostic mode to work with HTML5 databases using the browser's supported database engine priorizing webSQL over indexedDB, but if you prefer you can use webSQL or indexedDB separately.
+WebDB has an agnostic mode to work with HTML5 databases using the browser's supported database engine priorizing indexedDB over webSQL, but if you prefer you can use webSQL or indexedDB separately.
 
 In both three modes the api is the same, but what changes is the constructor.
 ###Agnostic mode###

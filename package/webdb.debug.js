@@ -15,9 +15,7 @@
       this.schema = schema;
       this.version = version;
       this.size = size != null ? size : 5242880;
-      if (window.openDatabase) {
-        manager = new WebDB.webSQL(this.name, this.schema, this.version, this.size, callback);
-      } else if (window.indexedDB) {
+      if (window.indexedDB) {
         this.schema = (function() {
           var _results;
           _results = [];
@@ -27,6 +25,8 @@
           return _results;
         }).call(this);
         manager = new WebDB.indexedDB(this.name, this.schema, this.version, callback);
+      } else if (window.openDatabase) {
+        manager = new WebDB.webSQL(this.name, this.schema, this.version, this.size, callback);
       }
       if (!window.openDatabase && !window.indexedDB) {
         this.select = function() {
