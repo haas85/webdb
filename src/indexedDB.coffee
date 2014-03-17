@@ -12,8 +12,13 @@ class indexedDB
 
     openRequest.onupgradeneeded = (e) =>
       @db = e.target.result
-      options = keyPath: "key", autoIncrement: true
-      for table in schema
+      for table of schema
+        options = {}
+        for column of schema[table]
+          if _typeOf(schema[table][column]) is "object"
+            options["keyPath"] = column if schema[table][column]["primary"]
+            if schema[table][column]["autoincrement"]
+              options["autoIncrement"] = true
         @db.createObjectStore table, options if not @db.objectStoreNames.contains table
 
     openRequest.onversionchange = (e) ->

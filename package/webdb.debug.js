@@ -116,15 +116,21 @@
       };
       openRequest.onupgradeneeded = (function(_this) {
         return function(e) {
-          var options, table, _i, _len, _results;
+          var column, options, table, _results;
           _this.db = e.target.result;
-          options = {
-            keyPath: "key",
-            autoIncrement: true
-          };
           _results = [];
-          for (_i = 0, _len = schema.length; _i < _len; _i++) {
-            table = schema[_i];
+          for (table in schema) {
+            options = {};
+            for (column in schema[table]) {
+              if (_typeOf(schema[table][column]) === "object") {
+                if (schema[table][column]["primary"]) {
+                  options["keyPath"] = column;
+                }
+                if (schema[table][column]["autoincrement"]) {
+                  options["autoIncrement"] = true;
+                }
+              }
+            }
             if (!_this.db.objectStoreNames.contains(table)) {
               _results.push(_this.db.createObjectStore(table, options));
             } else {
@@ -337,9 +343,9 @@
         for (column in schema[table]) {
           if (_typeOf(schema[table][column]) === "object") {
             if (schema[table][column]["autoincrement"]) {
-              sql += "" + column + " INTEGER";
+              sql += "'" + column + "' INTEGER";
             } else {
-              sql += "" + column + " " + schema[table][column]['type'];
+              sql += "'" + column + "' " + schema[table][column]['type'];
             }
             if (schema[table][column]["primary"]) {
               sql += " PRIMARY KEY";
@@ -350,7 +356,7 @@
             sql += ",";
             _schema[table][column] = schema[table][column]["type"];
           } else {
-            sql += "" + column + " " + schema[table][column] + ",";
+            sql += "'" + column + "' " + schema[table][column] + ",";
             _schema[table][column] = schema[table][column];
           }
         }
