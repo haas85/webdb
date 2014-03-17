@@ -1,4 +1,4 @@
-/* WebDB v1.0.0 - 2/22/2014
+/* WebDB v1.0.1 - 3/17/2014
    http://github.com/haas85/webdb
    Copyright (c) 2014 Iñigo Gonzalez Vazquez <ingonza85@gmail.com> (@haas85) - Under MIT License */
 (function() {
@@ -95,8 +95,7 @@
     indexedDB.prototype.db = null;
 
     function indexedDB(name, schema, version, callback) {
-      var openRequest,
-        _this = this;
+      var openRequest;
       if (version == null) {
         version = 1;
       }
@@ -104,33 +103,37 @@
         throw "IndexedDB not supported";
       }
       openRequest = window.indexedDB.open(name, version);
-      openRequest.onsuccess = function(e) {
-        _this.db = e.target.result;
-        if (callback != null) {
-          return callback.call(callback);
-        }
-      };
+      openRequest.onsuccess = (function(_this) {
+        return function(e) {
+          _this.db = e.target.result;
+          if (callback != null) {
+            return callback.call(callback);
+          }
+        };
+      })(this);
       openRequest.onerror = function(e) {
         throw "Error opening database";
       };
-      openRequest.onupgradeneeded = function(e) {
-        var options, table, _i, _len, _results;
-        _this.db = e.target.result;
-        options = {
-          keyPath: "key",
-          autoIncrement: true
-        };
-        _results = [];
-        for (_i = 0, _len = schema.length; _i < _len; _i++) {
-          table = schema[_i];
-          if (!_this.db.objectStoreNames.contains(table)) {
-            _results.push(_this.db.createObjectStore(table, options));
-          } else {
-            _results.push(void 0);
+      openRequest.onupgradeneeded = (function(_this) {
+        return function(e) {
+          var options, table, _i, _len, _results;
+          _this.db = e.target.result;
+          options = {
+            keyPath: "key",
+            autoIncrement: true
+          };
+          _results = [];
+          for (_i = 0, _len = schema.length; _i < _len; _i++) {
+            table = schema[_i];
+            if (!_this.db.objectStoreNames.contains(table)) {
+              _results.push(_this.db.createObjectStore(table, options));
+            } else {
+              _results.push(void 0);
+            }
           }
-        }
-        return _results;
-      };
+          return _results;
+        };
+      })(this);
       openRequest.onversionchange = function(e) {
         return console.log(e);
       };
@@ -309,14 +312,16 @@
   WebDB.indexedDB = indexedDB;
 
   webSQL = (function() {
-    var _insert, _queryToSQL, _setValue, _this;
+    var _insert, _queryToSQL, _schema, _setValue, _this;
 
     webSQL.prototype.db = null;
+
+    _schema = {};
 
     _this = null;
 
     function webSQL(name, schema, version, size, callback) {
-      var row, sql, table, _tables;
+      var column, sql, table, _tables;
       if (size == null) {
         size = 5;
       }
@@ -327,9 +332,27 @@
       this.db = window.openDatabase(name, version, "", size);
       _tables = 0;
       for (table in schema) {
+        _schema[table] = {};
         sql = "CREATE TABLE IF NOT EXISTS " + table + " (";
-        for (row in schema[table]) {
-          sql += "" + row + " " + schema[table][row] + ",";
+        for (column in schema[table]) {
+          if (_typeOf(schema[table][column]) === "object") {
+            if (schema[table][column]["autoincrement"]) {
+              sql += "" + column + " INTEGER";
+            } else {
+              sql += "" + column + " " + schema[table][column]['type'];
+            }
+            if (schema[table][column]["primary"]) {
+              sql += " PRIMARY KEY";
+            }
+            if (schema[table][column]["autoincrement"]) {
+              sql += " AUTOINCREMENT";
+            }
+            sql += ",";
+            _schema[table][column] = schema[table][column]["type"];
+          } else {
+            sql += "" + column + " " + schema[table][column] + ",";
+            _schema[table][column] = schema[table][column];
+          }
         }
         sql = sql.substring(0, sql.length - 1) + ")";
         _tables++;
@@ -348,7 +371,7 @@
       if (query == null) {
         query = [];
       }
-      sql = ("SELECT * FROM " + table) + _queryToSQL(query);
+      sql = ("SELECT * FROM " + table) + _queryToSQL(table, query);
       return this.execute(sql, callback);
     };
 
@@ -381,9 +404,9 @@
       }
       sql = "UPDATE " + table + " SET ";
       for (key in data) {
-        sql += "" + key + " = " + (_setValue(data[key])) + ", ";
+        sql += "" + key + " = " + (_setValue(table, key, data[key])) + ", ";
       }
-      sql = sql.substring(0, sql.length - 2) + _queryToSQL(query);
+      sql = sql.substring(0, sql.length - 2) + _queryToSQL(table, query);
       return this.execute(sql, callback);
     };
 
@@ -392,7 +415,7 @@
       if (query == null) {
         query = [];
       }
-      sql = "DELETE FROM " + table + " " + (_queryToSQL(query));
+      sql = "DELETE FROM " + table + " " + (_queryToSQL(table, query));
       return this.execute(sql, callback);
     };
 
@@ -436,7 +459,7 @@
       data = "(";
       for (key in row) {
         sql += "" + key + ", ";
-        data += "" + (_setValue(row[key])) + ", ";
+        data += "" + (_setValue(table, key, row[key])) + ", ";
       }
       sql = sql.substring(0, sql.length - 2) + ") ";
       data = data.substring(0, data.length - 2) + ") ";
@@ -444,7 +467,7 @@
       return _this.execute(sql, callback);
     };
 
-    _queryToSQL = function(query) {
+    _queryToSQL = function(table, query) {
       var elem, or_stmt, sql, value, _i, _len;
       if (query.length > 0) {
         sql = " WHERE (";
@@ -452,7 +475,7 @@
           elem = query[_i];
           for (or_stmt in elem) {
             value = elem[or_stmt];
-            sql += "" + or_stmt + " = " + (_setValue(value)) + " AND ";
+            sql += "" + or_stmt + " = " + (_setValue(table, or_stmt, value)) + " AND ";
           }
           sql = sql.substring(0, sql.length - 5) + ") OR (";
         }
@@ -462,11 +485,12 @@
       }
     };
 
-    _setValue = function(value) {
-      if (isNaN(value)) {
-        return "'" + value + "'";
-      } else {
+    _setValue = function(table, column, value) {
+      console.log(_schema);
+      if (_schema[table][column] === "NUMBER") {
         return value;
+      } else {
+        return "'" + value + "'";
       }
     };
 

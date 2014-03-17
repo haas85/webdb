@@ -1,5 +1,5 @@
 class indexedDB
-  db: null
+  db       : null
 
   constructor: (name, schema, version=1, callback) ->
     throw "IndexedDB not supported" if not window.indexedDB

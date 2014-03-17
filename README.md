@@ -175,14 +175,20 @@ To create a database and its table schemas you just have to create a new instanc
 
 
 		//The first level of the schema defines the table, and its content the atributes and types:
+		/*If an attribute is primary key, the content is an object with:
+		*  primary: Sets the column as primary key
+		*  autoincrement: Sets the column with autoincrement (sets the type to integer automatically)
+		*  type: If the autoincrement is not used this attribute must be added to set the type
+		*/
 		var schema = {
 			users:{
+			    id: {primary: true, autoincrement: true}, 
 				name: "TEXT",
 				email: "TEXT",
 				age: "NUMBER"
 			},
 			posts: {
-				title: "TEXT",
+				title: {primary: true, type: "TEXT"}, //Primary without autoincrement
 				content: "TEXT"
 			}
 		};
