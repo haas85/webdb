@@ -33,6 +33,7 @@
             console.log("Dropped");
         };
         var onCreated = function(){
+            console.log(arguments);
             alert("Database Created");
             //myDB.insert("users",[{"name":"janire", "age":22}, {"name": "Xabi"}]);
             //myDB.insert("posts",[{"title":"El titulo 1", "content":"El texto del primer post"}, {"title": "El titulo 2"}]);
@@ -40,7 +41,7 @@
             //myDB.drop("posts", dr);
         };
 
-        var myDB = new WebDB("MyDB", schema, 1, 10, onCreated);
+        var myDB = new WebDB.webSQL("MyDB", schema, 1, 10, onCreated);
     </script>
 </body>
 </html>

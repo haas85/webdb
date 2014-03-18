@@ -4,7 +4,8 @@ class webSQL
   _this    = null
 
   constructor: (name, schema, version, size=5, callback) ->
-    throw "WebSQL not supported" if not window.openDatabase
+    if callback? and not window.openDatabase
+      return callback.call callback, "WebSQL not supported", null
     size = size * 1024 * 1024
     @db = window.openDatabase name, version, "", size
     _tables = 0
@@ -14,7 +15,7 @@ class webSQL
       for column of schema[table]
         if _typeOf(schema[table][column]) is "object"
           if schema[table][column]["autoincrement"]
-            sql += "#{column} INTEGER"
+            sql += "'#{column}' INTEGER"
           else
             sql += "'#{column}' #{schema[table][column]['type']}"
           sql += " PRIMARY KEY" if schema[table][column]["primary"]
@@ -25,12 +26,11 @@ class webSQL
           sql += "'#{column}' #{schema[table][column]},"
           _schema[table][column] = schema[table][column]
       sql = sql.substring(0, sql.length - 1) + ")"
-      console.log sql
       _tables++
       _this = @
-      @execute sql, ->
+      @execute sql, (error, result) =>
         _tables--
-        callback.call callback if _tables is 0 and callback?
+        callback.call callback, error, @db if _tables is 0 and callback?
 
 
   select: (table, query=[], callback) ->
@@ -43,11 +43,15 @@ class webSQL
     else
       len = data.length
       result = 0
+      _error = []
       for row in data
-        _insert table, row, (row) ->
+        _insert table, row, (error, row) ->
+          _error.push error if error?
           len--
-          result++
-          callback.call callback, result if len is 0 and callback?
+          result++ if not error?
+          if len is 0 and callback?
+            _error = null if _error.length is 0
+            callback.call callback, _error, result
 
 
   update: (table, data, query=[], callback) ->
@@ -64,8 +68,8 @@ class webSQL
   drop: (table, callback) -> @execute "DROP TABLE IF EXISTS #{table}", callback
 
   execute: (sql, callback) ->
-    if not @db
-      throw "Database not initializated"
+    if not @db and callback?
+      callback.call callback, "Database not initializated", null
     else
       @db.transaction (tx) ->
         tx.executeSql sql, [],
@@ -73,13 +77,14 @@ class webSQL
             result = []
             if sql.indexOf("SELECT") isnt -1
               result = (resultset.rows.item(i) for i in [0...resultset.rows.length])
-              callback.call callback, result if callback?
+              callback.call callback, null, result if callback?
             else
-              callback.call callback, resultset.rowsAffected if callback?),
-          (-> console.log arguments)
+              callback.call callback, null, resultset.rowsAffected if callback?),
+          (->
+            callback.call callback, arguments[1], null if callback?)
 
   _insert = (table, row, callback) ->
-    sql = "INSERT INTO #{table} ("
+    sql = "INSERT ,INTO #{table} ("
     data = "("
     for key of row
       sql += "#{key}, "
@@ -102,7 +107,6 @@ class webSQL
       ""
 
   _setValue = (table, column, value) ->
-    console.log _schema
     if _schema[table][column] is "NUMBER" then value else "'#{value}'"
 
 WebDB.webSQL = webSQL

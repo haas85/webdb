@@ -122,12 +122,14 @@
         return function(e) {
           _this.db = e.target.result;
           if (callback != null) {
-            return callback.call(callback);
+            return callback.call(callback(_this.db, null));
           }
         };
       })(this);
       openRequest.onerror = function(e) {
-        throw "Error opening database";
+        if (callback != null) {
+          return callback.call(callback(null, e));
+        }
       };
       openRequest.onupgradeneeded = (function(_this) {
         return function(e) {
@@ -362,8 +364,8 @@
       if (size == null) {
         size = 5;
       }
-      if (!window.openDatabase) {
-        throw "WebSQL not supported";
+      if ((callback != null) && !window.openDatabase) {
+        return callback.call(callback, "WebSQL not supported", null);
       }
       size = size * 1024 * 1024;
       this.db = window.openDatabase(name, version, "", size);
@@ -374,7 +376,7 @@
         for (column in schema[table]) {
           if (_typeOf(schema[table][column]) === "object") {
             if (schema[table][column]["autoincrement"]) {
-              sql += "" + column + " INTEGER";
+              sql += "'" + column + "' INTEGER";
             } else {
               sql += "'" + column + "' " + schema[table][column]['type'];
             }
@@ -392,15 +394,16 @@
           }
         }
         sql = sql.substring(0, sql.length - 1) + ")";
-        console.log(sql);
         _tables++;
         _this = this;
-        this.execute(sql, function() {
-          _tables--;
-          if (_tables === 0 && (callback != null)) {
-            return callback.call(callback);
-          }
-        });
+        this.execute(sql, (function(_this) {
+          return function(error, result) {
+            _tables--;
+            if (_tables === 0 && (callback != null)) {
+              return callback.call(callback, error, _this.db);
+            }
+          };
+        })(this));
       }
     }
 
@@ -414,20 +417,29 @@
     };
 
     webSQL.prototype.insert = function(table, data, callback) {
-      var len, result, row, _i, _len, _results;
+      var len, result, row, _error, _i, _len, _results;
       if (_typeOf(data) === "object") {
         return _insert(table, data, callback);
       } else {
         len = data.length;
         result = 0;
+        _error = [];
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           row = data[_i];
-          _results.push(_insert(table, row, function(row) {
+          _results.push(_insert(table, row, function(error, row) {
+            if (error != null) {
+              _error.push(error);
+            }
             len--;
-            result++;
+            if (error == null) {
+              result++;
+            }
             if (len === 0 && (callback != null)) {
-              return callback.call(callback, result);
+              if (_error.length === 0) {
+                _error = null;
+              }
+              return callback.call(callback, _error, result);
             }
           }));
         }
@@ -462,8 +474,8 @@
     };
 
     webSQL.prototype.execute = function(sql, callback) {
-      if (!this.db) {
-        throw "Database not initializated";
+      if (!this.db && (callback != null)) {
+        return callback.call(callback, "Database not initializated", null);
       } else {
         return this.db.transaction(function(tx) {
           return tx.executeSql(sql, [], (function(transaction, resultset) {
@@ -479,15 +491,17 @@
                 return _results;
               })();
               if (callback != null) {
-                return callback.call(callback, result);
+                return callback.call(callback, null, result);
               }
             } else {
               if (callback != null) {
-                return callback.call(callback, resultset.rowsAffected);
+                return callback.call(callback, null, resultset.rowsAffected);
               }
             }
           }), (function() {
-            return console.log(arguments);
+            if (callback != null) {
+              return callback.call(callback, arguments[1], null);
+            }
           }));
         });
       }
@@ -495,7 +509,7 @@
 
     _insert = function(table, row, callback) {
       var data, key, sql;
-      sql = "INSERT INTO " + table + " (";
+      sql = "INSERT ,INTO " + table + " (";
       data = "(";
       for (key in row) {
         sql += "" + key + ", ";
@@ -526,7 +540,6 @@
     };
 
     _setValue = function(table, column, value) {
-      console.log(_schema);
       if (_schema[table][column] === "NUMBER") {
         return value;
       } else {

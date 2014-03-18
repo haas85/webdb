@@ -23,9 +23,10 @@ class indexedDB
     openRequest = window.indexedDB.open(name, @version)
     openRequest.onsuccess = (e) =>
       @db = e.target.result
-      callback.call callback if callback?
+      callback.call callback @db, null if callback?
 
-    openRequest.onerror = (e) -> throw "Error opening database"
+    openRequest.onerror = (e) ->
+      callback.call callback null, e if callback?
 
     openRequest.onupgradeneeded = (e) =>
       @db = e.target.result
