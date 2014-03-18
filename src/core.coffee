@@ -1,7 +1,7 @@
 window.indexedDB = window.indexedDB or window.webkitIndexedDB or window.mozIndexedDB
 
 class webDB
-  db: null
+  db       : null
   constructor: (@name, @schema, @version, @size=5242880, callback) ->
     if window.indexedDB
       manager = new WebDB.indexedDB(@name, @schema, @version, callback)

@@ -40,8 +40,7 @@
             //myDB.drop("posts", dr);
         };
 
-        var myDB = new WebDB.indexedDB("MyDB", schema, 1, onCreated);
-
+        var myDB = new WebDB("MyDB", schema, 1, 10, onCreated);
     </script>
 </body>
 </html>

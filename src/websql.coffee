@@ -16,13 +16,13 @@ class webSQL
           if schema[table][column]["autoincrement"]
             sql += "#{column} INTEGER"
           else
-            sql += "#{column} #{schema[table][column]['type']}"
+            sql += "'#{column}' #{schema[table][column]['type']}"
           sql += " PRIMARY KEY" if schema[table][column]["primary"]
           sql += " AUTOINCREMENT" if schema[table][column]["autoincrement"]
           sql += ","
           _schema[table][column] = schema[table][column]["type"]
         else
-          sql += "#{column} #{schema[table][column]},"
+          sql += "'#{column}' #{schema[table][column]},"
           _schema[table][column] = schema[table][column]
       sql = sql.substring(0, sql.length - 1) + ")"
       console.log sql
