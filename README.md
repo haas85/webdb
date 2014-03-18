@@ -25,14 +25,20 @@ To create a database and its table schemas you just have to create a new instanc
 
 
 		//The first level of the schema defines the table, and its content the atributes and types:
+		/*If an attribute is primary key, the content is an object with:
+		*  primary: Sets the column as primary key
+		*  autoincrement: Sets the column with autoincrement (sets the type to integer automatically)
+		*  type: If the autoincrement is not used this attribute must be added to set the type
+		*/
 		var schema = {
 			users:{
+			    id: {primary: true, autoincrement: true}, 
 				name: "TEXT",
 				email: "TEXT",
 				age: "NUMBER"
 			},
 			posts: {
-				title: "TEXT",
+				title: {primary: true, type: "TEXT"}, //Primary without autoincrement
 				content: "TEXT"
 			}
 		};
@@ -335,11 +341,32 @@ It is the HTML5 database engine which W3C is working on, supported by Chrome, IE
 To create a database and its table schemas you just have to create a new instance of **WebDB.indexedDB**.
 #####Parameters#####
 * **name:** the name of the database
-* **schema:** The schema, its structure is an array with names
+* **schema:** The schema, its structure is explained in the next code
 * **version:** version of the database
 * **callback:** The method to call after creating the database
 
-		var schema = ["users", "posts"];
+		//The first level of the schema defines the table, and its content the atributes and types:
+		/*If an attribute is primary key, the content is an object with:
+		*  primary: Sets the column as primary key
+		*  autoincrement: Sets the column with autoincrement (sets the type to integer automatically)
+		*  type: If the autoincrement is not used this attribute must be added to set the type
+		*/
+		var schema = {
+			users:{
+			    id: {primary: true, autoincrement: true}, 
+				name: "TEXT",
+				email: "TEXT",
+				age: "NUMBER"
+			},
+			posts: {
+				title: {primary: true, type: "TEXT"}, //Primary without autoincrement
+				content: "TEXT"
+			}
+		};
+
+		var onCreated = function(){
+			alert("Database Created");
+		};
 
 		var onCreated = function(){
 			alert("Database Created");
@@ -452,7 +479,7 @@ Using the **delete** method entries can be deleted.
 		myDB.delete("users", query, onDelete);
 
 ####Deleting a table####
-A table can be deleted usnig the **drop** method.
+A table can be deleted using the **drop** method.
 #####Parameters#####
 * **name:** The name of the database
 * **callback:** The callback to execute after droping the table
@@ -467,7 +494,6 @@ What is next?
 -------------
 The next improvements that are coming are:
 
-* Auto versioning
 * Query modificators such as bigger, smaller and like
 * Group by, order by
 * Count, distinct

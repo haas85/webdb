@@ -4,7 +4,6 @@ class webDB
   db: null
   constructor: (@name, @schema, @version, @size=5242880, callback) ->
     if window.indexedDB
-      @schema = (key for key of @schema)
       manager = new WebDB.indexedDB(@name, @schema, @version, callback)
     else if window.openDatabase
       manager = new WebDB.webSQL(@name, @schema, @version, @size, callback)

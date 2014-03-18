@@ -10,20 +10,12 @@
     webDB.prototype.db = null;
 
     function webDB(name, schema, version, size, callback) {
-      var key, manager;
+      var manager;
       this.name = name;
       this.schema = schema;
       this.version = version;
       this.size = size != null ? size : 5242880;
       if (window.indexedDB) {
-        this.schema = (function() {
-          var _results;
-          _results = [];
-          for (key in this.schema) {
-            _results.push(key);
-          }
-          return _results;
-        }).call(this);
         manager = new WebDB.indexedDB(this.name, this.schema, this.version, callback);
       } else if (window.openDatabase) {
         manager = new WebDB.webSQL(this.name, this.schema, this.version, this.size, callback);
