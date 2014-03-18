@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <script src="webdb.debug.js"></script>
+    <script>
+        var schema = {
+            users:{
+                id: {primary: true, autoincrement: true},
+                name: "TEXT",
+                group: "TEXT",
+                age: "NUMBER"
+            },
+            posts: {
+                title: "TEXT",
+                content: "TEXT"
+            },
+            posts2: {
+                title: "TEXT",
+                content: "TEXT"
+            },
+            posts3: {
+                id: {primary: true},
+                title: "TEXT",
+                content: "TEXT"
+            }
+        };
+
+        var dr = function(){
+            console.log("Dropped");
+        };
+        var onCreated = function(){
+            alert("Database Created");
+            //myDB.insert("users",[{"name":"janire", "age":22}, {"name": "Xabi"}]);
+            //myDB.insert("posts",[{"title":"El titulo 1", "content":"El texto del primer post"}, {"title": "El titulo 2"}]);
+            //myDB.drop("users", dr);
+            //myDB.drop("posts", dr);
+        };
+
+        var myDB = new WebDB.indexedDB("MyDB", schema, 1, onCreated);
+
+    </script>
+</body>
+</html>

@@ -14,17 +14,18 @@ class webSQL
       for column of schema[table]
         if _typeOf(schema[table][column]) is "object"
           if schema[table][column]["autoincrement"]
-            sql += "'#{column}' INTEGER"
+            sql += "#{column} INTEGER"
           else
-            sql += "'#{column}' #{schema[table][column]['type']}"
+            sql += "#{column} #{schema[table][column]['type']}"
           sql += " PRIMARY KEY" if schema[table][column]["primary"]
           sql += " AUTOINCREMENT" if schema[table][column]["autoincrement"]
           sql += ","
           _schema[table][column] = schema[table][column]["type"]
         else
-          sql += "'#{column}' #{schema[table][column]},"
+          sql += "#{column} #{schema[table][column]},"
           _schema[table][column] = schema[table][column]
       sql = sql.substring(0, sql.length - 1) + ")"
+      console.log sql
       _tables++
       _this = @
       @execute sql, ->
@@ -67,13 +68,15 @@ class webSQL
       throw "Database not initializated"
     else
       @db.transaction (tx) ->
-        tx.executeSql sql, [], (transaction, resultset) ->
-          result = []
-          if sql.indexOf("SELECT") isnt -1
-            result = (resultset.rows.item(i) for i in [0...resultset.rows.length])
-            callback.call callback, result if callback?
-          else
-            callback.call callback, resultset.rowsAffected if callback?
+        tx.executeSql sql, [],
+          ((transaction, resultset) ->
+            result = []
+            if sql.indexOf("SELECT") isnt -1
+              result = (resultset.rows.item(i) for i in [0...resultset.rows.length])
+              callback.call callback, result if callback?
+            else
+              callback.call callback, resultset.rowsAffected if callback?),
+          (-> console.log arguments)
 
   _insert = (table, row, callback) ->
     sql = "INSERT INTO #{table} ("

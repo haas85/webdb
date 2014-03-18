@@ -1,4 +1,4 @@
-/* WebDB v1.0.1 - 3/17/2014
+/* WebDB v1.0.1 - 3/18/2014
    http://github.com/haas85/webdb
    Copyright (c) 2014 Iñigo Gonzalez Vazquez <ingonza85@gmail.com> (@haas85) - Under MIT License */
 (function() {
@@ -90,19 +90,41 @@
   };
 
   indexedDB = (function() {
-    var _check, _queryOp, _write;
+    var SCHEMA_KEY, VERSION_KEY, _check, _queryOp, _write;
 
     indexedDB.prototype.db = null;
 
+    indexedDB.prototype.version = 0;
+
+    indexedDB.prototype.schema = "";
+
+    VERSION_KEY = "indexedDB_version";
+
+    SCHEMA_KEY = "indexedDB_schema";
+
     function indexedDB(name, schema, version, callback) {
-      var openRequest;
+      var openRequest, _schema;
       if (version == null) {
         version = 1;
       }
       if (!window.indexedDB) {
         throw "IndexedDB not supported";
       }
-      openRequest = window.indexedDB.open(name, version);
+      this.version = parseInt(localStorage[VERSION_KEY]);
+      if ((this.version == null) || this.version < version || isNaN(this.version)) {
+        localStorage[VERSION_KEY] = this.version = parseInt(version);
+      }
+      this.schema = localStorage[SCHEMA_KEY];
+      _schema = JSON.stringify(schema);
+      if ((this.schema != null) && this.schema !== _schema) {
+        localStorage[SCHEMA_KEY] = this.schema = _schema;
+        localStorage[VERSION_KEY] = this.version += 1;
+      } else {
+        localStorage[SCHEMA_KEY] = this.schema = _schema;
+      }
+      console.log(name);
+      console.log(this.version);
+      openRequest = window.indexedDB.open(name, this.version);
       openRequest.onsuccess = (function(_this) {
         return function(e) {
           _this.db = e.target.result;
@@ -130,6 +152,15 @@
                   options["autoIncrement"] = true;
                 }
               }
+            }
+            console.log(options);
+            if (options.keyPath == null) {
+              console.log("empty");
+              options = {
+                keyPath: "__key",
+                autoIncrement: true
+              };
+              console.log(options);
             }
             if (!_this.db.objectStoreNames.contains(table)) {
               _results.push(_this.db.createObjectStore(table, options));
@@ -216,26 +247,32 @@
     };
 
     indexedDB.prototype.drop = function(table, callback) {
-      var exception, store;
-      try {
-        store = this.db.transaction([table], "readwrite").objectStore(table);
-        store.openCursor().onsuccess = function(e) {
-          var cursor;
-          cursor = e.target.result;
-          if (cursor) {
-            store["delete"](cursor.primaryKey);
-            return cursor["continue"]();
-          }
+      var setVerReq;
+      this.version += 1;
+      localStorage[VERSION_KEY] = this.version;
+      setVerReq = this.db.setVersion(this.version);
+      setVerReq.onsuccess = (function(_this) {
+        return function(event) {
+          var delReq, txn;
+          txn = event.result;
+          delReq = _this.db.deleteObjectStore(table);
+          delReq.onsuccess = function() {
+            console.log("DROPPED TABLE");
+            if (callback != null) {
+              return callback.call(callback);
+            }
+          };
+          return delReq.onerror = function() {
+            return this;
+          };
         };
-        if (callback != null) {
-          return callback.call(callback);
-        }
-      } catch (_error) {
-        exception = _error;
-        if (callback != null) {
-          return callback.call(callback);
-        }
-      }
+      })(this);
+      setVerReq.onerror = function() {
+        return this;
+      };
+      return setVerReq.onblocked = function() {
+        return this;
+      };
     };
 
     indexedDB.prototype.execute = function(sql, callbacl) {
@@ -245,6 +282,8 @@
     _write = function(_this, table, data, callback) {
       var request, store;
       store = _this.db.transaction([table], "readwrite").objectStore(table);
+      console.log("ADD");
+      console.log(data);
       request = store.add(data);
       request.onerror = function(e) {
         if (callback != null) {
@@ -343,9 +382,9 @@
         for (column in schema[table]) {
           if (_typeOf(schema[table][column]) === "object") {
             if (schema[table][column]["autoincrement"]) {
-              sql += "'" + column + "' INTEGER";
+              sql += "" + column + " INTEGER";
             } else {
-              sql += "'" + column + "' " + schema[table][column]['type'];
+              sql += "" + column + " " + schema[table][column]['type'];
             }
             if (schema[table][column]["primary"]) {
               sql += " PRIMARY KEY";
@@ -356,11 +395,12 @@
             sql += ",";
             _schema[table][column] = schema[table][column]["type"];
           } else {
-            sql += "'" + column + "' " + schema[table][column] + ",";
+            sql += "" + column + " " + schema[table][column] + ",";
             _schema[table][column] = schema[table][column];
           }
         }
         sql = sql.substring(0, sql.length - 1) + ")";
+        console.log(sql);
         _tables++;
         _this = this;
         this.execute(sql, function() {
@@ -434,7 +474,7 @@
         throw "Database not initializated";
       } else {
         return this.db.transaction(function(tx) {
-          return tx.executeSql(sql, [], function(transaction, resultset) {
+          return tx.executeSql(sql, [], (function(transaction, resultset) {
             var i, result;
             result = [];
             if (sql.indexOf("SELECT") !== -1) {
@@ -454,7 +494,9 @@
                 return callback.call(callback, resultset.rowsAffected);
               }
             }
-          });
+          }), (function() {
+            return console.log(arguments);
+          }));
         });
       }
     };
