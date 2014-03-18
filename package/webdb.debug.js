@@ -1,4 +1,4 @@
-/* WebDB v1.0.1 - 3/18/2014
+/* WebDB v1.2 - 3/18/2014
    http://github.com/haas85/webdb
    Copyright (c) 2014 Iñigo Gonzalez Vazquez <ingonza85@gmail.com> (@haas85) - Under MIT License */
 (function() {
@@ -21,45 +21,60 @@
         manager = new WebDB.webSQL(this.name, this.schema, this.version, this.size, callback);
       }
       if (!window.openDatabase && !window.indexedDB) {
+        this.select = function(table, query, callback) {
+          if (callback != null) {
+            return callback.call(callback, "HTML5 Databases not supported", null);
+          }
+        };
+        this.insert = function(table, data, callback) {
+          if (callback != null) {
+            return callback.call(callback, "HTML5 Databases not supported", null);
+          }
+        };
+        this.update = function(table, data, query, callback) {
+          if (query == null) {
+            query = [];
+          }
+          if (callback != null) {
+            return callback.call(callback, "HTML5 Databases not supported", null);
+          }
+        };
+        this["delete"] = function(table, query, callback) {
+          if (callback != null) {
+            return callback.call(callback, "HTML5 Databases not supported", null);
+          }
+        };
+        this.drop = function(table, callback) {
+          if (callback != null) {
+            return callback.call(callback, "HTML5 Databases not supported", null);
+          }
+        };
+        this.execute = function(sql, callback) {
+          if (callback != null) {
+            return callback.call(callback, "HTML5 Databases not supported", null);
+          }
+        };
+      } else {
+        this.db = manager.db;
         this.select = function() {
-          throw "HTML5 Databases not supported";
+          return manager.select.apply(manager, arguments);
         };
         this.insert = function() {
-          throw "HTML5 Databases not supported";
+          return manager.insert.apply(manager, arguments);
         };
         this.update = function() {
-          throw "HTML5 Databases not supported";
+          return manager.update.apply(manager, arguments);
         };
         this["delete"] = function() {
-          throw "HTML5 Databases not supported";
+          return manager["delete"].apply(manager, arguments);
         };
         this.drop = function() {
-          throw "HTML5 Databases not supported";
+          return manager.drop.apply(manager, arguments);
         };
         this.execute = function() {
-          throw "HTML5 Databases not supported";
+          return manager.execute.apply(manager, arguments);
         };
-        throw "HTML5 Databases not supported";
       }
-      this.db = manager.db;
-      this.select = function() {
-        return manager.select.apply(manager, arguments);
-      };
-      this.insert = function() {
-        return manager.insert.apply(manager, arguments);
-      };
-      this.update = function() {
-        return manager.update.apply(manager, arguments);
-      };
-      this["delete"] = function() {
-        return manager["delete"].apply(manager, arguments);
-      };
-      this.drop = function() {
-        return manager.drop.apply(manager, arguments);
-      };
-      this.execute = function() {
-        return manager.execute.apply(manager, arguments);
-      };
     }
 
     return webDB;
@@ -101,8 +116,8 @@
       if (version == null) {
         version = 1;
       }
-      if (!window.indexedDB) {
-        throw "IndexedDB not supported";
+      if (!window.indexedDB && (callback != null)) {
+        callback.call(callback, "IndexedDB not supported", null);
       }
       this.version = parseInt(localStorage[VERSION_KEY]);
       if ((this.version == null) || this.version < version || isNaN(this.version)) {
@@ -122,13 +137,13 @@
         return function(e) {
           _this.db = e.target.result;
           if (callback != null) {
-            return callback.call(callback(_this.db, null));
+            return callback.call(callback, null, _this.db);
           }
         };
       })(this);
-      openRequest.onerror = function(e) {
+      openRequest.onerror = function(error) {
         if (callback != null) {
-          return callback.call(callback(null, e));
+          return callback.call(callback, error, null);
         }
       };
       openRequest.onupgradeneeded = (function(_this) {
@@ -176,18 +191,29 @@
     };
 
     indexedDB.prototype.insert = function(table, data, callback) {
-      var len, row, _i, _len, _results;
+      var len, row, _error, _i, _len, _result, _results;
       if (_typeOf(data) === "object") {
         return _write(this, table, data, callback);
       } else {
         len = data.length;
+        _result = 0;
+        _error = [];
         _results = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           row = data[_i];
-          _results.push(_write(this, table, row, function() {
+          _results.push(_write(this, table, row, function(error, result) {
+            if (error == null) {
+              _result++;
+            }
+            if (error != null) {
+              _error.push(error);
+            }
             len--;
             if (len === 0 && (callback != null)) {
-              return callback.call(callback, data.length);
+              if (_error.length === 0) {
+                _error = null;
+              }
+              return callback.call(callback, _error, _result);
             }
           }));
         }
@@ -199,22 +225,23 @@
       if (query == null) {
         query = [];
       }
-      return _queryOp(this.db, table, data, query, function(result) {
+      return _queryOp(this.db, table, data, query, function(error, result) {
         if (callback != null) {
-          return callback.call(callback, result.length);
+          return callback.call(callback, error, result.length);
         }
       });
     };
 
     indexedDB.prototype["delete"] = function(table, query, callback) {
-      var exception, result, store;
+      var exception, result, store, transaction;
       if (query == null) {
         query = [];
       }
       try {
         result = 0;
         store = this.db.transaction([table], "readwrite").objectStore(table);
-        return store.openCursor().onsuccess = function(e) {
+        transaction = store.openCursor();
+        transaction.onsuccess = function(e) {
           var cursor, element;
           cursor = e.target.result;
           if (cursor) {
@@ -226,14 +253,19 @@
             return cursor["continue"]();
           } else {
             if (callback != null) {
-              return callback.call(callback, result);
+              return callback.call(callback, null, result);
             }
+          }
+        };
+        return transaction.onerror = function(error) {
+          if (callback != null) {
+            return callback.call(callback, error, null);
           }
         };
       } catch (_error) {
         exception = _error;
         if (callback != null) {
-          return callback.call(callback);
+          return callback.call(callback, exception, null);
         }
       }
     };
@@ -250,7 +282,7 @@
             return _this.db = e.target.result;
           };
         })(this);
-        return openRequest.onupgradeneeded = (function(_this) {
+        openRequest.onupgradeneeded = (function(_this) {
           return function(e) {
             var _schema;
             _this.db = e.target.result;
@@ -259,34 +291,41 @@
             delete _schema[table];
             _this.schema = localStorage[SCHEMA_KEY] = JSON.stringify(_schema);
             if (callback != null) {
-              return callback.call(callback);
+              return callback.call(callback, null);
             }
           };
         })(this);
+        return openRequest.onerror = function(error) {
+          if (callback != null) {
+            return callback.call(callback, error);
+          }
+        };
       } catch (_error) {
         exception = _error;
         if (callback != null) {
-          return callback.call(callback);
+          return callback.call(callback, exception);
         }
       }
     };
 
-    indexedDB.prototype.execute = function(sql, callbacl) {
-      return "";
+    indexedDB.prototype.execute = function(sql, callback) {
+      if (callback != null) {
+        return callback.call(callback, "Execute not supported");
+      }
     };
 
     _write = function(_this, table, data, callback) {
       var request, store;
       store = _this.db.transaction([table], "readwrite").objectStore(table);
       request = store.add(data);
-      request.onerror = function(e) {
+      request.onerror = function(error) {
         if (callback != null) {
-          return callback.call(callback, null);
+          return callback.call(callback, error, null);
         }
       };
       return request.onsuccess = function(result) {
         if (callback != null) {
-          return callback.call(callback, 1);
+          return callback.call(callback, null, 1);
         }
       };
     };
@@ -316,13 +355,14 @@
     };
 
     _queryOp = function(db, table, data, query, callback) {
-      var op, result;
+      var op, result, transaction;
       if (query == null) {
         query = [];
       }
       result = [];
       op = data != null ? "readwrite" : "readonly";
-      return db.transaction([table], op).objectStore(table).openCursor().onsuccess = function(e) {
+      transaction = db.transaction([table], op).objectStore(table).openCursor();
+      transaction.onsuccess = function(e) {
         var cursor, element;
         cursor = e.target.result;
         if (cursor) {
@@ -338,8 +378,13 @@
           return cursor["continue"]();
         } else {
           if (callback != null) {
-            return callback.call(callback, result);
+            return callback.call(callback, null, result);
           }
+        }
+      };
+      return transaction.onerror = function(error) {
+        if (callback != null) {
+          return callback.call(callback, error, null);
         }
       };
     };
@@ -408,12 +453,19 @@
     }
 
     webSQL.prototype.select = function(table, query, callback) {
-      var sql;
+      var exception, sql;
       if (query == null) {
         query = [];
       }
-      sql = ("SELECT * FROM " + table) + _queryToSQL(table, query);
-      return this.execute(sql, callback);
+      try {
+        sql = ("SELECT * FROM " + table) + _queryToSQL(table, query);
+        return this.execute(sql, callback);
+      } catch (_error) {
+        exception = _error;
+        if (callback != null) {
+          return callback.call(callback, exception, null);
+        }
+      }
     };
 
     webSQL.prototype.insert = function(table, data, callback) {
@@ -448,29 +500,47 @@
     };
 
     webSQL.prototype.update = function(table, data, query, callback) {
-      var key, sql;
+      var exception, key, sql;
       if (query == null) {
         query = [];
       }
-      sql = "UPDATE " + table + " SET ";
-      for (key in data) {
-        sql += "" + key + " = " + (_setValue(table, key, data[key])) + ", ";
+      try {
+        sql = "UPDATE " + table + " SET ";
+        for (key in data) {
+          sql += "" + key + " = " + (_setValue(table, key, data[key])) + ", ";
+        }
+        sql = sql.substring(0, sql.length - 2) + _queryToSQL(table, query);
+        return this.execute(sql, callback);
+      } catch (_error) {
+        exception = _error;
+        if (callback != null) {
+          return callback.call(callback, exception, null);
+        }
       }
-      sql = sql.substring(0, sql.length - 2) + _queryToSQL(table, query);
-      return this.execute(sql, callback);
     };
 
     webSQL.prototype["delete"] = function(table, query, callback) {
-      var sql;
+      var exception, sql;
       if (query == null) {
         query = [];
       }
-      sql = "DELETE FROM " + table + " " + (_queryToSQL(table, query));
-      return this.execute(sql, callback);
+      try {
+        sql = "DELETE FROM " + table + " " + (_queryToSQL(table, query));
+        return this.execute(sql, callback);
+      } catch (_error) {
+        exception = _error;
+        if (callback != null) {
+          return callback.call(callback, exception, null);
+        }
+      }
     };
 
     webSQL.prototype.drop = function(table, callback) {
-      return this.execute("DROP TABLE IF EXISTS " + table, callback);
+      return this.execute("DROP TABLE IF EXISTS " + table, function(error, result) {
+        if (callback != null) {
+          return callback.call(callback, error);
+        }
+      });
     };
 
     webSQL.prototype.execute = function(sql, callback) {
@@ -508,17 +578,24 @@
     };
 
     _insert = function(table, row, callback) {
-      var data, key, sql;
-      sql = "INSERT ,INTO " + table + " (";
-      data = "(";
-      for (key in row) {
-        sql += "" + key + ", ";
-        data += "" + (_setValue(table, key, row[key])) + ", ";
+      var data, exception, key, sql;
+      try {
+        sql = "INSERT ,INTO " + table + " (";
+        data = "(";
+        for (key in row) {
+          sql += "" + key + ", ";
+          data += "" + (_setValue(table, key, row[key])) + ", ";
+        }
+        sql = sql.substring(0, sql.length - 2) + ") ";
+        data = data.substring(0, data.length - 2) + ") ";
+        sql += " VALUES " + data;
+        return _this.execute(sql, callback);
+      } catch (_error) {
+        exception = _error;
+        if (callback != null) {
+          return callback.call(callback, exception, null);
+        }
       }
-      sql = sql.substring(0, sql.length - 2) + ") ";
-      data = data.substring(0, data.length - 2) + ") ";
-      sql += " VALUES " + data;
-      return _this.execute(sql, callback);
     };
 
     _queryToSQL = function(table, query) {

@@ -1,5 +1,5 @@
-WebDB
-=====
+WebDB v1.2
+===========
 
 Javascript library to use HTML5 database engines IndexedDB and WebSql in an agnostic way.
 What is WebDB?
@@ -319,11 +319,11 @@ The data can be updated, to do this the method **update** must be used.
 			name: "user_2"
 		};
 
-		var onUpdate = function(error, affected){
+		var onUpdate = function(error, updated){
 			if (error != null){
 			  alert("Something wrong happened");
 			}else{
-				console.log("The number of rows updated is: " + affected);
+				console.log("The number of rows updated is: " + updated);
 			}
 		};
 
@@ -343,11 +343,11 @@ Using the **delete** method entries can be deleted.
 			}
 		];
 
-		var onDelete = function(error, affected){
+		var onDelete = function(error, deleted){
 			if (error != null){
 			  alert("Something wrong happened");
 			}else{
-				console.log("The number of rows deleted is: " + affected);
+				console.log("The number of rows deleted is: " + deleted);
 			}
 		};
 
@@ -395,7 +395,7 @@ To create a database and its table schemas you just have to create a new instanc
 * **name:** the name of the database
 * **schema:** The schema, its structure is explained in the next code
 * **version:** version of the database
-* **callback:** The method to call after creating the database
+* **callback:** The method to call after creating the database it will receive the error and the database (there is no need to store ir, webDb handles it)
 
 		//The first level of the schema defines the table, and its content the atributes and types:
 		/*If an attribute is primary key, the content is an object with:
@@ -416,12 +416,13 @@ To create a database and its table schemas you just have to create a new instanc
 			}
 		};
 
-		var onCreated = function(){
-			alert("Database Created");
-		};
 
-		var onCreated = function(){
-			alert("Database Created");
+		var onCreated = function(error, db){
+			if (error != null){
+			  alert("Something wrong happened");
+			}else{
+			  alert("Database created");
+			}
 		};
 
 		var myDB = new WebDB.indexedDB("MyDB", schema, 1, onCreated);
@@ -431,7 +432,7 @@ The instance that previously has been created has several methods the first one 
 #####Parameters#####
 * **table:** The name of the table
 * **data:** Data in object or array to insert
-* **callback:** The callback that will receive the number of insertions
+* **callback:** The callback that will receive the error and the number of insertions
 
 		var single_data = {
 			name: "haas85",
@@ -453,8 +454,12 @@ The instance that previously has been created has several methods the first one 
 
 		];
 
-		var onInserted = function(inserts){
-			alert("The amount of rows inserted is: " + inserts);
+		var onInserted = function(error, inserts){
+			if (error != null){
+			  alert("Something wrong happened");
+			}else{
+			  alert("The amount of rows inserted is: " + inserts);
+			}
 		};
 
 		myDB.insert("users", single_data, onInserted);
@@ -465,7 +470,7 @@ You can get the stored data using the **select** method.
 #####Parameters#####
 * **name:** The name of the database
 * **query:** The search query, its format is an array that contains objects, each attribute of the object is linked to the others with an AND and each position of the array whith an OR.
-* **callback:** The callback that will receive the result of the query.
+* **callback:** The callback that will receive the error and the result of the query.
 
 		var query = [
 			{
@@ -478,9 +483,13 @@ You can get the stored data using the **select** method.
 		];
 		// This is like: WHERE (name = 'haas85' AND age = 29) OR (age = 24)
 
-		var onUsers = function(users){
-			console.log("This is an array of objects from the DB");
-			console.log(users);
+		var onUsers = function(error, users){
+			if (error != null){
+			  alert("Something wrong happened");
+			}else{
+			  console.log("This is an array of objects from the DB");
+			  console.log(users);
+			}
 		};
 
 		myDB.select("users", query, onUsers)
@@ -491,7 +500,7 @@ The data can be updated, to do this the method **update** must be used.
 * **name:** The name of the database
 * **data:** The fields to update
 * **query:** The query to search entries, the same format as in select.
-* **callback:** The callback that will receive the number of entries modified
+* **callback:** The callback that will receive the error and the number of entries modified
 
 		var query = [
 			{
@@ -504,8 +513,12 @@ The data can be updated, to do this the method **update** must be used.
 			name: "user_2"
 		};
 
-		var onUpdate = function(affected){
-			console.log("The number of rows updated is: " + affected);
+		var onUpdate = function(error, updated){
+			if (error != null){
+			  alert("Something wrong happened");
+			}else{
+			  console.log("The number of rows updated is: " + updated);
+			}
 		};
 
 		myDB.update("users", data, query, onUpdate);
@@ -515,7 +528,7 @@ Using the **delete** method entries can be deleted.
 #####Parameters#####
 * **name:** The name of the database
 * **query:** The query to search entries, the same format as in select.
-* **callback:** The callback that will receive the number of entries deleted
+* **callback:** The callback that will receive the error and the number of entries deleted
 
 		var query = [
 			{
@@ -524,8 +537,12 @@ Using the **delete** method entries can be deleted.
 			}
 		];
 
-		var onDelete = function(affected){
-			console.log("The number of rows deleted is: " + affected);
+		var onDelete = function(error, deleted){
+			if (error != null){
+			  alert("Something wrong happened");
+			}else{
+			  console.log("The number of rows deleted is: " + deleted);
+			}
 		};
 
 		myDB.delete("users", query, onDelete);
@@ -534,10 +551,14 @@ Using the **delete** method entries can be deleted.
 A table can be deleted using the **drop** method.
 #####Parameters#####
 * **name:** The name of the database
-* **callback:** The callback to execute after droping the table
+* **callback:** The callback to execute after droping the table it will receive an error if somethig wrong happens
 
-		var onDropped = function(){
-			console.log("Table deleted");
+		var onDropped = function(error){
+			if (error != null){
+			  alert("Something wrong happened");
+			}else{
+			  console.log("Table deleted");
+			}
 		};
 		myDB.drop("posts", onDropped);
 		

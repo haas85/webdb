@@ -34,8 +34,11 @@ class webSQL
 
 
   select: (table, query=[], callback) ->
-    sql = "SELECT * FROM #{table}" + _queryToSQL(table, query)
-    @execute sql, callback
+    try
+      sql = "SELECT * FROM #{table}" + _queryToSQL(table, query)
+      @execute sql, callback
+    catch exception
+      callback.call callback, exception, null if callback?
 
   insert: (table, data, callback) ->
     if _typeOf(data) is "object"
@@ -55,17 +58,25 @@ class webSQL
 
 
   update: (table, data, query=[], callback) ->
-    sql = "UPDATE #{table} SET "
-    for key of data
-      sql += "#{key} = #{_setValue(table, key, data[key])}, "
-    sql = sql.substring(0, sql.length - 2) + _queryToSQL(table, query)
-    @execute sql, callback
+    try
+      sql = "UPDATE #{table} SET "
+      for key of data
+        sql += "#{key} = #{_setValue(table, key, data[key])}, "
+      sql = sql.substring(0, sql.length - 2) + _queryToSQL(table, query)
+      @execute sql, callback
+    catch exception
+      callback.call callback, exception, null if callback?
 
   delete: (table, query=[], callback) ->
-    sql = "DELETE FROM #{table} #{_queryToSQL(table, query)}"
-    @execute sql, callback
+    try
+      sql = "DELETE FROM #{table} #{_queryToSQL(table, query)}"
+      @execute sql, callback
+    catch exception
+      callback.call callback, exception, null if callback?
 
-  drop: (table, callback) -> @execute "DROP TABLE IF EXISTS #{table}", callback
+  drop: (table, callback) ->
+    @execute "DROP TABLE IF EXISTS #{table}", (error, result) ->
+      callback.call callback, error if callback?
 
   execute: (sql, callback) ->
     if not @db and callback?
@@ -84,15 +95,18 @@ class webSQL
             callback.call callback, arguments[1], null if callback?)
 
   _insert = (table, row, callback) ->
-    sql = "INSERT ,INTO #{table} ("
-    data = "("
-    for key of row
-      sql += "#{key}, "
-      data += "#{_setValue(table, key, row[key])}, "
-    sql = sql.substring(0, sql.length - 2) + ") "
-    data = data.substring(0, data.length - 2) + ") "
-    sql += " VALUES #{data}"
-    _this.execute sql, callback
+    try
+      sql = "INSERT ,INTO #{table} ("
+      data = "("
+      for key of row
+        sql += "#{key}, "
+        data += "#{_setValue(table, key, row[key])}, "
+      sql = sql.substring(0, sql.length - 2) + ") "
+      data = data.substring(0, data.length - 2) + ") "
+      sql += " VALUES #{data}"
+      _this.execute sql, callback
+    catch exception
+      callback.call callback, exception, null if callback?
 
   _queryToSQL = (table, query) ->
     if query.length > 0
