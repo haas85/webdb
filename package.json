@@ -1,6 +1,6 @@
 {
   "name"            : "WebDB",
-  "version"         : "1.0.0",
+  "version"         : "1.2",
   "description"     : "Javascript framework to use HTML5 database engines IndexedDB and WebSql in an agnostic way.",
   "homepage"        : "http://github.com/haas85/webdb",
   "author"          : "Iñigo Gonzalez Vazquez <ingonza85@gmail.com> (@haas85)",
