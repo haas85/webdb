@@ -2,6 +2,7 @@ class indexedDB
   db       : null
   version  : 0
   schema   : ""
+  name     : ""
 
   VERSION_KEY = "indexedDB_version"
   SCHEMA_KEY  = "indexedDB_schema"
@@ -18,8 +19,7 @@ class indexedDB
       localStorage[VERSION_KEY] = @version += 1
     else
       localStorage[SCHEMA_KEY] = @schema = _schema
-    console.log name
-    console.log @version
+    @name = name
     openRequest = window.indexedDB.open(name, @version)
     openRequest.onsuccess = (e) =>
       @db = e.target.result
@@ -36,11 +36,8 @@ class indexedDB
             options["keyPath"] = column if schema[table][column]["primary"]
             if schema[table][column]["autoincrement"]
               options["autoIncrement"] = true
-        console.log options
         if not options.keyPath?
-          console.log "empty"
           options = keyPath: "__key", autoIncrement: true
-          console.log options
         @db.createObjectStore table, options if not @db.objectStoreNames.contains table
 
     openRequest.onversionchange = (e) ->
@@ -80,36 +77,27 @@ class indexedDB
       callback.call callback if callback?
 
   drop: (table, callback) ->
-    @version += 1
-    localStorage[VERSION_KEY] = @version
-    setVerReq = @db.setVersion(@version)
-    setVerReq.onsuccess = (event) =>
-      txn = event.result
-      delReq = @db.deleteObjectStore table
-      delReq.onsuccess = ->
-        console.log "DROPPED TABLE"
+    try
+      @db.close()
+      @version += 1
+      localStorage[VERSION_KEY] = @version
+      openRequest = window.indexedDB.open(@name, @version)
+      openRequest.onsuccess = (e) =>
+        @db = e.target.result
+      openRequest.onupgradeneeded = (e) =>
+        @db = e.target.result
+        @db.deleteObjectStore table
+        _schema = JSON.parse @schema
+        `delete _schema[table]`
+        @schema = localStorage[SCHEMA_KEY] = JSON.stringify _schema
         callback.call callback if callback?
-      delReq.onerror = -> @
-    setVerReq.onerror = -> @
-    setVerReq.onblocked = -> @
-    # try
-    #   store = @db.transaction([table],"readwrite").objectStore(table)
-    #   store.openCursor().onsuccess = (e) ->
-    #     cursor = e.target.result
-    #     if cursor
-    #       store.delete cursor.primaryKey
-    #       do cursor.continue
-    #   # to drop completely, a version change must be executed
-    #   callback.call callback if callback?
-    # catch exception
-    #  callback.call callback if callback?
+    catch exception
+     callback.call callback if callback?
 
   execute: (sql, callbacl) -> ""
 
   _write = (_this, table, data, callback) ->
     store = _this.db.transaction([table],"readwrite").objectStore(table)
-    console.log "ADD"
-    console.log data
     request = store.add data
     request.onerror = (e) ->
       callback.call callback, null if callback?

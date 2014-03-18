@@ -98,6 +98,8 @@
 
     indexedDB.prototype.schema = "";
 
+    indexedDB.prototype.name = "";
+
     VERSION_KEY = "indexedDB_version";
 
     SCHEMA_KEY = "indexedDB_schema";
@@ -122,8 +124,7 @@
       } else {
         localStorage[SCHEMA_KEY] = this.schema = _schema;
       }
-      console.log(name);
-      console.log(this.version);
+      this.name = name;
       openRequest = window.indexedDB.open(name, this.version);
       openRequest.onsuccess = (function(_this) {
         return function(e) {
@@ -153,14 +154,11 @@
                 }
               }
             }
-            console.log(options);
             if (options.keyPath == null) {
-              console.log("empty");
               options = {
                 keyPath: "__key",
                 autoIncrement: true
               };
-              console.log(options);
             }
             if (!_this.db.objectStoreNames.contains(table)) {
               _results.push(_this.db.createObjectStore(table, options));
@@ -247,32 +245,36 @@
     };
 
     indexedDB.prototype.drop = function(table, callback) {
-      var setVerReq;
-      this.version += 1;
-      localStorage[VERSION_KEY] = this.version;
-      setVerReq = this.db.setVersion(this.version);
-      setVerReq.onsuccess = (function(_this) {
-        return function(event) {
-          var delReq, txn;
-          txn = event.result;
-          delReq = _this.db.deleteObjectStore(table);
-          delReq.onsuccess = function() {
-            console.log("DROPPED TABLE");
+      var exception, openRequest;
+      try {
+        this.db.close();
+        this.version += 1;
+        localStorage[VERSION_KEY] = this.version;
+        openRequest = window.indexedDB.open(this.name, this.version);
+        openRequest.onsuccess = (function(_this) {
+          return function(e) {
+            return _this.db = e.target.result;
+          };
+        })(this);
+        return openRequest.onupgradeneeded = (function(_this) {
+          return function(e) {
+            var _schema;
+            _this.db = e.target.result;
+            _this.db.deleteObjectStore(table);
+            _schema = JSON.parse(_this.schema);
+            delete _schema[table];
+            _this.schema = localStorage[SCHEMA_KEY] = JSON.stringify(_schema);
             if (callback != null) {
               return callback.call(callback);
             }
           };
-          return delReq.onerror = function() {
-            return this;
-          };
-        };
-      })(this);
-      setVerReq.onerror = function() {
-        return this;
-      };
-      return setVerReq.onblocked = function() {
-        return this;
-      };
+        })(this);
+      } catch (_error) {
+        exception = _error;
+        if (callback != null) {
+          return callback.call(callback);
+        }
+      }
     };
 
     indexedDB.prototype.execute = function(sql, callbacl) {
@@ -282,8 +284,6 @@
     _write = function(_this, table, data, callback) {
       var request, store;
       store = _this.db.transaction([table], "readwrite").objectStore(table);
-      console.log("ADD");
-      console.log(data);
       request = store.add(data);
       request.onerror = function(e) {
         if (callback != null) {
