@@ -96,7 +96,7 @@ class webSQL
 
   _insert = (table, row, callback) ->
     try
-      sql = "INSERT ,INTO #{table} ("
+      sql = "INSERT INTO #{table} ("
       data = "("
       for key of row
         sql += "#{key}, "

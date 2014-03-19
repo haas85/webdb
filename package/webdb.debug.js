@@ -1,4 +1,4 @@
-/* WebDB v1.2 - 3/18/2014
+/* WebDB v1.2.1 - 3/19/2014
    http://github.com/haas85/webdb
    Copyright (c) 2014 Iñigo Gonzalez Vazquez <ingonza85@gmail.com> (@haas85) - Under MIT License */
 (function() {
@@ -580,7 +580,7 @@
     _insert = function(table, row, callback) {
       var data, exception, key, sql;
       try {
-        sql = "INSERT ,INTO " + table + " (";
+        sql = "INSERT INTO " + table + " (";
         data = "(";
         for (key in row) {
           sql += "" + key + ", ";
