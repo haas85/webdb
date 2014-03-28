@@ -4,22 +4,24 @@ class indexedDB
   schema   : ""
   name     : ""
 
-  VERSION_KEY = "indexedDB_version"
-  SCHEMA_KEY  = "indexedDB_schema"
+  VERSION_KEY: "indexedDB_version"
+  SCHEMA_KEY : "indexedDB_schema"
 
   constructor: (name, schema, version=1, callback) ->
     if not window.indexedDB and callback?
-      callback.call callback, "IndexedDB not supported", null
-    @version = parseInt localStorage[VERSION_KEY]
+      return callback.call callback, "IndexedDB not supported", null
+    @VERSION_KEY += "_#{name}"
+    @SCHEMA_KEY  += "_#{name}"
+    @version = parseInt localStorage[@VERSION_KEY]
     if not @version? or @version < version or isNaN(@version)
-      localStorage[VERSION_KEY] = @version = parseInt version
-    @schema = localStorage[SCHEMA_KEY]
+      localStorage[@VERSION_KEY] = @version = parseInt version
+    @schema = localStorage[@SCHEMA_KEY]
     _schema = JSON.stringify(schema)
     if @schema? and @schema isnt _schema
-      localStorage[SCHEMA_KEY] = @schema = _schema
-      localStorage[VERSION_KEY] = @version += 1
+      localStorage[@SCHEMA_KEY] = @schema = _schema
+      localStorage[@VERSION_KEY] = @version += 1
     else
-      localStorage[SCHEMA_KEY] = @schema = _schema
+      localStorage[@SCHEMA_KEY] = @schema = _schema
     @name = name
     openRequest = window.indexedDB.open(name, @version)
     openRequest.onsuccess = (e) =>
@@ -91,7 +93,7 @@ class indexedDB
     try
       @db.close()
       @version += 1
-      localStorage[VERSION_KEY] = @version
+      localStorage[@VERSION_KEY] = @version
       openRequest = window.indexedDB.open(@name, @version)
       openRequest.onsuccess = (e) =>
         @db = e.target.result
@@ -100,7 +102,7 @@ class indexedDB
         @db.deleteObjectStore table
         _schema = JSON.parse @schema
         `delete _schema[table]`
-        @schema = localStorage[SCHEMA_KEY] = JSON.stringify _schema
+        @schema = localStorage[@SCHEMA_KEY] = JSON.stringify _schema
         callback.call callback, null if callback?
       openRequest.onerror = (error) ->
         callback.call callback, error if callback?

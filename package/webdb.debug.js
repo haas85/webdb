@@ -1,4 +1,4 @@
-/* WebDB v1.2.1 - 3/19/2014
+/* WebDB v1.2.1 - 3/28/2014
    http://github.com/haas85/webdb
    Copyright (c) 2014 Iñigo Gonzalez Vazquez <ingonza85@gmail.com> (@haas85) - Under MIT License */
 (function() {
@@ -97,7 +97,7 @@
   };
 
   indexedDB = (function() {
-    var SCHEMA_KEY, VERSION_KEY, _check, _queryOp, _write;
+    var _check, _queryOp, _write;
 
     indexedDB.prototype.db = null;
 
@@ -107,9 +107,9 @@
 
     indexedDB.prototype.name = "";
 
-    VERSION_KEY = "indexedDB_version";
+    indexedDB.prototype.VERSION_KEY = "indexedDB_version";
 
-    SCHEMA_KEY = "indexedDB_schema";
+    indexedDB.prototype.SCHEMA_KEY = "indexedDB_schema";
 
     function indexedDB(name, schema, version, callback) {
       var openRequest, _schema;
@@ -117,19 +117,21 @@
         version = 1;
       }
       if (!window.indexedDB && (callback != null)) {
-        callback.call(callback, "IndexedDB not supported", null);
+        return callback.call(callback, "IndexedDB not supported", null);
       }
-      this.version = parseInt(localStorage[VERSION_KEY]);
+      this.VERSION_KEY += "_" + name;
+      this.SCHEMA_KEY += "_" + name;
+      this.version = parseInt(localStorage[this.VERSION_KEY]);
       if ((this.version == null) || this.version < version || isNaN(this.version)) {
-        localStorage[VERSION_KEY] = this.version = parseInt(version);
+        localStorage[this.VERSION_KEY] = this.version = parseInt(version);
       }
-      this.schema = localStorage[SCHEMA_KEY];
+      this.schema = localStorage[this.SCHEMA_KEY];
       _schema = JSON.stringify(schema);
       if ((this.schema != null) && this.schema !== _schema) {
-        localStorage[SCHEMA_KEY] = this.schema = _schema;
-        localStorage[VERSION_KEY] = this.version += 1;
+        localStorage[this.SCHEMA_KEY] = this.schema = _schema;
+        localStorage[this.VERSION_KEY] = this.version += 1;
       } else {
-        localStorage[SCHEMA_KEY] = this.schema = _schema;
+        localStorage[this.SCHEMA_KEY] = this.schema = _schema;
       }
       this.name = name;
       openRequest = window.indexedDB.open(name, this.version);
@@ -275,7 +277,7 @@
       try {
         this.db.close();
         this.version += 1;
-        localStorage[VERSION_KEY] = this.version;
+        localStorage[this.VERSION_KEY] = this.version;
         openRequest = window.indexedDB.open(this.name, this.version);
         openRequest.onsuccess = (function(_this) {
           return function(e) {
@@ -289,7 +291,7 @@
             _this.db.deleteObjectStore(table);
             _schema = JSON.parse(_this.schema);
             delete _schema[table];
-            _this.schema = localStorage[SCHEMA_KEY] = JSON.stringify(_schema);
+            _this.schema = localStorage[_this.SCHEMA_KEY] = JSON.stringify(_schema);
             if (callback != null) {
               return callback.call(callback, null);
             }
