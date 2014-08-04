@@ -1,4 +1,4 @@
-/* WebDB v1.2.1 - 3/28/2014
+/* WebDB v1.2.1 - 8/4/2014
    http://github.com/haas85/webdb
    Copyright (c) 2014 Iñigo Gonzalez Vazquez <ingonza85@gmail.com> (@haas85) - Under MIT License */
 (function() {
@@ -455,13 +455,14 @@
     }
 
     webSQL.prototype.select = function(table, query, callback) {
-      var exception, sql;
+      var exception, sql, _prepared;
       if (query == null) {
         query = [];
       }
       try {
-        sql = ("SELECT * FROM " + table) + _queryToSQL(table, query);
-        return this.execute(sql, callback);
+        _prepared = _queryToSQL(table, query);
+        sql = ("SELECT * FROM " + table) + _prepared.sql;
+        return this.execute(sql, callback, _prepared.values);
       } catch (_error) {
         exception = _error;
         if (callback != null) {
@@ -502,17 +503,21 @@
     };
 
     webSQL.prototype.update = function(table, data, query, callback) {
-      var exception, key, sql;
+      var exception, key, sql, values, _prepared;
       if (query == null) {
         query = [];
       }
       try {
+        values = [];
         sql = "UPDATE " + table + " SET ";
         for (key in data) {
-          sql += "" + key + " = " + (_setValue(table, key, data[key])) + ", ";
+          sql += "" + key + " = ?, ";
+          values.push(data[key]);
         }
-        sql = sql.substring(0, sql.length - 2) + _queryToSQL(table, query);
-        return this.execute(sql, callback);
+        _prepared = _queryToSQL(table, query);
+        sql = sql.substring(0, sql.length - 2) + _prepared.sql;
+        values = values.concat(_prepared.values);
+        return this.execute(sql, callback, values);
       } catch (_error) {
         exception = _error;
         if (callback != null) {
@@ -522,13 +527,14 @@
     };
 
     webSQL.prototype["delete"] = function(table, query, callback) {
-      var exception, sql;
+      var exception, sql, _prepared;
       if (query == null) {
         query = [];
       }
       try {
-        sql = "DELETE FROM " + table + " " + (_queryToSQL(table, query));
-        return this.execute(sql, callback);
+        _prepared = _queryToSQL(table, query);
+        sql = "DELETE FROM " + table + " " + _prepared.sql;
+        return this.execute(sql, callback, _prepared.values);
       } catch (_error) {
         exception = _error;
         if (callback != null) {
@@ -545,12 +551,15 @@
       });
     };
 
-    webSQL.prototype.execute = function(sql, callback) {
+    webSQL.prototype.execute = function(sql, callback, values) {
+      if (values == null) {
+        values = [];
+      }
       if (!this.db && (callback != null)) {
         return callback.call(callback, "Database not initializated", null);
       } else {
         return this.db.transaction(function(tx) {
-          return tx.executeSql(sql, [], (function(transaction, resultset) {
+          return tx.executeSql(sql, values, (function(transaction, resultset) {
             var i, result;
             result = [];
             if (sql.indexOf("SELECT") !== -1) {
@@ -580,18 +589,20 @@
     };
 
     _insert = function(table, row, callback) {
-      var data, exception, key, sql;
+      var data, exception, key, sql, values;
       try {
         sql = "INSERT INTO " + table + " (";
         data = "(";
+        values = [];
         for (key in row) {
           sql += "" + key + ", ";
-          data += "" + (_setValue(table, key, row[key])) + ", ";
+          data += "?, ";
+          values.push(row[key]);
         }
         sql = sql.substring(0, sql.length - 2) + ") ";
         data = data.substring(0, data.length - 2) + ") ";
         sql += " VALUES " + data;
-        return _this.execute(sql, callback);
+        return _this.execute(sql, callback, values);
       } catch (_error) {
         exception = _error;
         if (callback != null) {
@@ -601,20 +612,29 @@
     };
 
     _queryToSQL = function(table, query) {
-      var elem, or_stmt, sql, value, _i, _len;
+      var elem, or_stmt, sql, value, values, _i, _len;
+      sql = "";
+      values = [];
       if (query.length > 0) {
         sql = " WHERE (";
         for (_i = 0, _len = query.length; _i < _len; _i++) {
           elem = query[_i];
           for (or_stmt in elem) {
             value = elem[or_stmt];
-            sql += "" + or_stmt + " = " + (_setValue(table, or_stmt, value)) + " AND ";
+            sql += "" + or_stmt + " = ? AND ";
+            values.push(value);
           }
           sql = sql.substring(0, sql.length - 5) + ") OR (";
         }
-        return sql.substring(0, sql.length - 5);
+        return {
+          sql: sql.substring(0, sql.length - 5),
+          values: values
+        };
       } else {
-        return "";
+        return {
+          sql: sql,
+          values: values
+        };
       }
     };
 
